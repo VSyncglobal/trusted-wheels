@@ -13,10 +13,5 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:push": "cd packages/database && npx prisma db push",
     "db:studio": "cd packages/database && npx prisma studio"
-  },
-  "devDependencies": {
-    "turbo": "^2.0.0",
-    "prettier": "^3.0.0",
-    "eslint": "^8.0.0"
   }
 }
