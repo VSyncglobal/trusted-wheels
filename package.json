@@ -1,7 +1,7 @@
 {
   "name": "trusted-wheels",
   "private": true,
-  "packageManager": "npm@10.0.0",  
+  "packageManager": "npm@10.0.0",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -13,5 +13,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:push": "cd packages/database && npx prisma db push",
     "db:studio": "cd packages/database && npx prisma studio"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "turbo": "^2.7.2"
   }
 }
