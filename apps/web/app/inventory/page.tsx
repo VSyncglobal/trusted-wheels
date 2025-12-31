@@ -5,18 +5,23 @@ import { Search, Car } from "lucide-react";
 
 export const revalidate = 60;
 
-// --- HELPERS ---
+// Type interfaces
+interface CountResult {
+  label: string;
+  count: number;
+}
 
+// Helper: explicit types for prisma result and map/sort params
 async function getBrandCounts() {
   const result = await prisma.vehicle.groupBy({
     by: ['make'],
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  // FIX: Explicitly type 'r', 'a', and 'b' to satisfy build strictness
+  
   return result
-    .map((r: any) => ({ label: r.make, count: r._count }))
-    .sort((a: any, b: any) => b.count - a.count);
+    .map((r: { make: string, _count: number }) => ({ label: r.make, count: r._count }))
+    .sort((a: CountResult, b: CountResult) => b.count - a.count);
 }
 
 async function getBodyTypeCounts() {
@@ -25,10 +30,10 @@ async function getBodyTypeCounts() {
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  // FIX: Explicitly type 'r', 'a', and 'b' to satisfy build strictness
+  
   return result
-    .map((r: any) => ({ label: r.bodyType, count: r._count }))
-    .sort((a: any, b: any) => b.count - a.count);
+    .map((r: { bodyType: string, _count: number }) => ({ label: r.bodyType, count: r._count }))
+    .sort((a: CountResult, b: CountResult) => b.count - a.count);
 }
 
 export default async function InventoryPage({
@@ -38,6 +43,7 @@ export default async function InventoryPage({
 }) {
   const params = await searchParams;
   
+  // Explicitly typing 'where' for Prisma
   const where: any = { status: "PUBLISHED" };
 
   if (params.type) where.bodyType = { equals: params.type, mode: 'insensitive' };
@@ -89,7 +95,7 @@ export default async function InventoryPage({
                     <Link href="/inventory" className={`block text-sm font-bold py-1 ${!params.make ? 'text-blue-600' : 'text-gray-400 hover:text-black'}`}>
                       All Brands
                     </Link>
-                    {brands.map((b: any) => (
+                    {brands.map((b) => (
                       <Link 
                         key={b.label} 
                         href={`/inventory?make=${b.label}`}
@@ -108,7 +114,7 @@ export default async function InventoryPage({
                     Body Type <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{bodyTypes.length}</span>
                  </h3>
                  <div className="space-y-1">
-                    {bodyTypes.map((type: any) => (
+                    {bodyTypes.map((type) => (
                        <Link 
                          key={type.label} 
                          href={`/inventory?type=${type.label}`}
@@ -141,11 +147,10 @@ export default async function InventoryPage({
                  </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                   {/* FIX: Explicitly type 'car' as any */}
-                   {vehicles.map((car: any) => (
+                   {/* FIX: Using Prisma generated types is better, but here we can rely on inference or explicit minimal types */}
+                   {vehicles.map((car) => (
                       <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white p-4 rounded-[1.5rem] border border-gray-100 hover:shadow-xl transition-all duration-300">
                          
-                         {/* Image */}
                          <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4">
                             {car.images[0] ? (
                                <Image 
@@ -158,7 +163,6 @@ export default async function InventoryPage({
                                <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-xs">NO IMAGE</div>
                             )}
                             
-                            {/* Stock Number */}
                             <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white uppercase tracking-wider">
                                {car.stockNumber}
                             </div>
@@ -168,13 +172,12 @@ export default async function InventoryPage({
                             </div>
                          </div>
                          
-                         {/* Content */}
                          <div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{car.year} • {car.bodyType}</p>
                             <h3 className="text-lg font-extrabold text-black group-hover:text-blue-600 transition-colors truncate">{car.make} {car.model}</h3>
                             
                             <div className="mt-4 flex items-center gap-3 text-xs font-medium text-gray-500 border-t border-gray-50 pt-3">
-                               {/* FIX: Explicitly type 'f' as any */}
+                               {/* Explicitly using optional chaining safely here */}
                                <span className="truncate">{car.features.find((f: any) => f.key === "Mileage")?.value || "N/A"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
                                <span className="truncate">{car.features.find((f: any) => f.key === "Fuel Type")?.value || "Petrol"}</span>

@@ -1,10 +1,10 @@
 'use client'
 
 import Link from "next/link";
-import { Car, Truck, Zap, Activity, Info } from "lucide-react";
+import { Car, Truck, Zap, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 
-// Fallback data if DB fetch fails
+// Fallback data
 const DEFAULT_CATEGORIES = [
   "SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe"
 ];
@@ -16,11 +16,13 @@ function getIcon(name: string) {
 }
 
 export function CategoryGrid() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]); // Initialize empty
 
+  // FIX: Using DEFAULT_CATEGORIES as initial state prevents the need for an effect
+  // But if we want to simulate fetching, we keep the effect
   useEffect(() => {
-    // In a real scenario, you'd fetch this from an API endpoint
-    // For now, we simulate a delay or use defaults
+    // If fetching logic existed, it would go here.
+    // Since we are using static defaults for now, we can just set them directly
     setCategories(DEFAULT_CATEGORIES);
   }, []);
 
@@ -40,12 +42,11 @@ export function CategoryGrid() {
 
          {categories.length === 0 ? (
             <div className="p-12 text-center bg-gray-50 rounded-3xl">
-               <Loader />
+               <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
             </div>
          ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-               {/* FIX: Explicitly type 'cat' as string */}
-               {categories.slice(0, 5).map((cat: string) => {
+               {categories.slice(0, 5).map((cat) => {
                   const Icon = getIcon(cat);
                   return (
                      <Link 
@@ -75,8 +76,4 @@ export function CategoryGrid() {
       </div>
     </section>
   )
-}
-
-function Loader() {
-    return <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
 }

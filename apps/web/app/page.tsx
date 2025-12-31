@@ -6,6 +6,20 @@ import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
+// Minimal interface for map iteration
+interface VehicleSummary {
+  id: string;
+  year: number;
+  make: string;
+  model: string;
+  stockNumber: string;
+  listingPrice: number | string; // Prisma Decimal acts like number but often typed loosely
+  bodyType: string;
+  images: { url: string }[];
+  features: { key: string; value: string }[];
+}
+
+// ... (Data fetching functions remain the same) ...
 async function getFeaturedVehicles() {
   return await prisma.vehicle.findMany({
     where: { status: "PUBLISHED" },
@@ -50,8 +64,8 @@ export default async function Page() {
               <p className="text-gray-400 italic">No inventory currently published.</p>
             </div>
           ) : (
-            // FIX: Explicitly type 'car' as any
-            vehicles.map((car: any) => (
+            // FIX: Using minimal interface instead of any, casting because Prisma types can be complex to import directly
+            (vehicles as unknown as VehicleSummary[]).map((car) => (
               <Link key={car.id} href={`/inventory/${car.id}`} className="group relative min-w-[300px] md:min-w-[400px] snap-center block">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-gray-100 mb-4">
                   {car.images[0] ? (
@@ -69,8 +83,8 @@ export default async function Page() {
                 <div>
                   <h3 className="text-xl font-bold text-black group-hover:text-gray-600 transition-colors">{car.year} {car.make} {car.model}</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    {/* FIX: Explicitly type 'f' as any */}
-                    {car.bodyType} • {car.features.find((f: any) => f.key === "Mileage")?.value || "0 km"}
+                    {/* FIX: Explicitly typed via interface */}
+                    {car.bodyType} • {car.features.find((f) => f.key === "Mileage")?.value || "0 km"}
                   </p>
                 </div>
               </Link>
@@ -85,8 +99,8 @@ export default async function Page() {
            <div className="max-w-[1400px] mx-auto">
               <h2 className="text-3xl font-extrabold text-black tracking-tight mb-12 text-center">Explore More</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                 {/* FIX: Explicitly type 'car' as any */}
-                 {otherVehicles.map((car: any) => (
+                 {/* FIX: Using minimal interface instead of any */}
+                 {(otherVehicles as unknown as VehicleSummary[]).map((car) => (
                     <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300">
                        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4">
                           {car.images[0] ? (
@@ -112,7 +126,7 @@ export default async function Page() {
         </section>
       )}
 
-      {/* VALUE PROPS */}
+      {/* ... Value Props Section (No changes needed) ... */}
       <section className="grid md:grid-cols-3 gap-12 py-24 border-t border-black/5 px-6 max-w-[1400px] mx-auto w-full bg-white">
          <div className="space-y-4">
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-black font-bold">1</div>
