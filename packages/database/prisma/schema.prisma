@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // or "sqlite" for local dev
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -23,30 +23,30 @@ model User {
 
 // The Core Asset
 model Vehicle {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   
   // Classification
-  stockNumber   String   @unique // e.g., KDG-001
-  vin           String?  @unique
+  stockNumber   String        @unique // e.g., KDG-001
+  vin           String?       @unique
   make          String
   model         String
   year          Int
-  trim          String?  // e.g., AMG, M Sport
-  bodyType      String   // Sedan, SUV, etc.
+  trim          String?       // e.g., AMG, M Sport
+  bodyType      String        // Sedan, SUV, etc.
   
   // Status
   status        VehicleStatus @default(DRAFT)
   
   // Pricing (Public)
-  listingPrice  Decimal  @db.Decimal(12, 2)
+  listingPrice  Decimal       @db.Decimal(12, 2)
   
   // Relations
   images        VehicleImage[]
   features      VehicleFeature[] // Custom Specs
   costs         VehicleCost[]    // Finance Tracking
   
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([make, model, year])
   @@index([status])
@@ -83,10 +83,91 @@ model VehicleFeature {
 
 // Finance & Logic (Super Admin Only)
 model VehicleCost {
-  id          String   @id @default(cuid())
-  vehicleId   String
-  description String   // e.g., "Import Duty", "Detailing"
-  amount      Decimal  @db.Decimal(12, 2)
+  id           String   @id @default(cuid())
+  vehicleId    String
+  description  String   // e.g., "Import Duty", "Detailing"
+  amount       Decimal  @db.Decimal(12, 2)
   dateIncurred DateTime @default(now())
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+// INCOMING LEADS (Public "Sell Your Car" submissions)
+model ListingRequest {
+  id            String        @id @default(cuid())
+  
+  // Contact Info
+  name          String
+  phone         String        // Primary identifier
+  email         String?
+  
+  // Vehicle Info
+  make          String
+  model         String
+  year          Int
+  mileage       Int
+  condition     String        // e.g. "Excellent", "Good", "Needs Work"
+  expectedPrice Decimal?      @db.Decimal(12, 2)
+  
+  // Meta
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+}
+
+enum RequestStatus {
+  PENDING
+  REVIEWED
+  CONTACTED
+  CONVERTED // Turned into a Vehicle
+  REJECTED
+}
+
+// 1. SMART FEATURES (For Dropdowns & Mandatory Specs)
+model FeatureTemplate {
+  id          String   @id @default(cuid())
+  label       String   // e.g. "Sunroof", "Drive Train"
+  type        String   // "TEXT", "DROPDOWN", "NUMBER"
+  options     String[] // ["Panoramic", "Standard", "None"] for dropdowns
+  isMandatory Boolean  @default(false)
+  category    String?  // e.g. "Interior", "Performance"
+}
+
+// 2. FINANCE & INVOICING
+model Invoice {
+  id          String   @id @default(cuid())
+  number      String   @unique // e.g. INV-2024-001
+  
+  // Client Details
+  clientName  String
+  clientEmail String?
+  clientPhone String
+  clientKRA   String?  // KRA PIN for Kenya
+  
+  // Line Items (Stored as JSON for simplicity or relation)
+  items       Json     // [{ desc: "Toyota Land Cruiser", qty: 1, price: 4500000 }]
+  
+  // Financials
+  subtotal    Decimal  @db.Decimal(12, 2)
+  tax         Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  
+  status      InvoiceStatus @default(DRAFT)
+  dueDate     DateTime
+  createdAt   DateTime @default(now())
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  VOID
+}
+
+model Attribute {
+  id        String   @id @default(cuid())
+  type      String   // e.g., "BRAND", "BODY_TYPE", "FEATURE"
+  value     String   // e.g., "Toyota", "SUV", "Sunroof"
+  createdAt DateTime @default(now())
+
+  @@unique([type, value]) // Prevent duplicate entries
 }

@@ -2,10 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ChevronRight, ChevronLeft, Plus, Trash2, AlertCircle, Loader2 } from "lucide-react";
-import { clsx } from "clsx";
-import { createVehicleAction } from "./actions"; // Import the Server Action
+import { ChevronRight, ChevronLeft, Plus, Trash2, Loader2, CheckCircle2 } from "lucide-react";
+import { createVehicleAction } from "./actions";
 
 // --- CONSTANTS ---
 const BRANDS = ["Toyota", "Mercedes-Benz", "BMW", "Audi", "Land Rover", "Nissan", "Honda", "Mazda"];
@@ -13,7 +11,6 @@ const TYPES = ["SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe"
 const YEARS = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i);
 const FUEL_TYPES = ["PETROL", "DIESEL", "HYBRID", "ELECTRIC"];
 const TRANSMISSIONS = ["AUTOMATIC", "MANUAL", "CVT"];
-const CONDITIONS = ["USED", "NEW"];
 
 // --- TYPES ---
 interface CustomSpec {
@@ -37,7 +34,6 @@ export default function CreateVehiclePage() {
     transmission: "AUTOMATIC",
     fuelType: "PETROL",
     mileage: "",
-    isAccidentFree: true,
     basePrice: "",
     sellingPrice: "",
   });
@@ -60,168 +56,216 @@ export default function CreateVehiclePage() {
     setCustomSpecs(customSpecs.filter((_, i) => i !== index));
   };
 
-  // --- SUBMISSION HANDLER ---
   const handleSubmit = async () => {
     startTransition(async () => {
-      // 1. Prepare data payload
-      const payload: any = {
-        ...formData,
-        customSpecs,
-      };
-
-      // 2. Call Server Action
+      const payload: any = { ...formData, customSpecs };
       const result = await createVehicleAction(payload);
-
-      // 3. Handle Result
       if (result.success) {
-        router.push("/"); // Redirect to dashboard on success
+        router.push("/"); 
       } else {
-        alert("Failed to create vehicle. Check console.");
+        alert("Failed to create vehicle: " + (result.error || "Unknown error"));
       }
     });
   };
 
-  const isStep1Valid = formData.brand && formData.model && formData.year && formData.type;
-  const isStep2Valid = formData.engineSizeCC && formData.mileage;
+  // Standard styles for maximum visibility
+  const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2";
+  const inputClass = "w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black focus:outline-none transition-all";
+  const sectionClass = "bg-white p-8 rounded-xl border border-gray-200 shadow-sm mb-6";
+
+  const isStep1Valid = formData.brand && formData.model && formData.year;
 
   return (
-    <div className="max-w-4xl mx-auto pt-6 pb-32">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-strong-black">Add New Vehicle</h1>
-        <p className="text-grey-500 mt-1">Step {step} of 3</p>
-        <div className="w-full h-1 bg-grey-200 mt-4 rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full bg-strong-black"
-            initial={{ width: 0 }}
-            animate={{ width: `${(step / 3) * 100}%` }}
-          />
+    <div className="min-h-screen bg-gray-50 pb-32 font-sans">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6 mb-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-2xl font-bold text-gray-900">Add New Vehicle</h1>
+          <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+             <span className={step >= 1 ? "text-black font-semibold" : ""}>1. Classification</span>
+             <ChevronRight size={14} />
+             <span className={step >= 2 ? "text-black font-semibold" : ""}>2. Specifications</span>
+             <ChevronRight size={14} />
+             <span className={step >= 3 ? "text-black font-semibold" : ""}>3. Review</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-8">
+      <div className="max-w-3xl mx-auto px-6">
+        
         {/* STEP 1: CLASSIFICATION */}
         {step === 1 && (
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 bg-off-white p-8 rounded-xl border border-grey-200">
-             <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Brand</label>
-                <select className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.brand} onChange={(e) => handleChange("brand", e.target.value)}>
+          <div className={sectionClass}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={labelClass}>Brand</label>
+                <select className={inputClass} value={formData.brand} onChange={(e) => handleChange("brand", e.target.value)}>
                   <option value="">Select Brand</option>
                   {BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Model</label>
-                <input type="text" className="w-full p-3 rounded-lg border border-grey-300 bg-white" placeholder="Model" value={formData.model} onChange={(e) => handleChange("model", e.target.value)} />
+              <div>
+                <label className={labelClass}>Model</label>
+                <input type="text" className={inputClass} placeholder="e.g. C-Class" value={formData.model} onChange={(e) => handleChange("model", e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Year</label>
-                <select className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.year} onChange={(e) => handleChange("year", e.target.value)}>
+              <div>
+                <label className={labelClass}>Year</label>
+                <select className={inputClass} value={formData.year} onChange={(e) => handleChange("year", e.target.value)}>
                   <option value="">Select Year</option>
                   {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Body Type</label>
-                <select className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.type} onChange={(e) => handleChange("type", e.target.value)}>
+              <div>
+                <label className={labelClass}>Body Type</label>
+                <select className={inputClass} value={formData.type} onChange={(e) => handleChange("type", e.target.value)}>
                   <option value="">Select Type</option>
                   {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* STEP 2: SPECS */}
+        {/* STEP 2: SPECIFICATIONS */}
         {step === 2 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-            <div className="bg-off-white p-8 rounded-xl border border-grey-200 space-y-6">
-              <h3 className="text-lg font-bold text-strong-black flex items-center gap-2">Core Specifications</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Engine Size (CC)</label>
-                   <input type="number" className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.engineSizeCC} onChange={(e) => handleChange("engineSizeCC", e.target.value)} />
+          <div className="space-y-6">
+            <div className={sectionClass}>
+              <h2 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100">Core Specs</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <label className={labelClass}>Engine Size (CC)</label>
+                   <input type="number" className={inputClass} value={formData.engineSizeCC} onChange={(e) => handleChange("engineSizeCC", e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Mileage (Km)</label>
-                   <input type="number" className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.mileage} onChange={(e) => handleChange("mileage", e.target.value)} />
+                <div>
+                   <label className={labelClass}>Mileage (Km)</label>
+                   <input type="number" className={inputClass} value={formData.mileage} onChange={(e) => handleChange("mileage", e.target.value)} />
                 </div>
-                 <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Fuel</label>
-                   <select className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.fuelType} onChange={(e) => handleChange("fuelType", e.target.value)}>
+                 <div>
+                   <label className={labelClass}>Fuel Type</label>
+                   <select className={inputClass} value={formData.fuelType} onChange={(e) => handleChange("fuelType", e.target.value)}>
                      {FUEL_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
                    </select>
                 </div>
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Transmission</label>
-                   <select className="w-full p-3 rounded-lg border border-grey-300 bg-white" value={formData.transmission} onChange={(e) => handleChange("transmission", e.target.value)}>
+                <div>
+                   <label className={labelClass}>Transmission</label>
+                   <select className={inputClass} value={formData.transmission} onChange={(e) => handleChange("transmission", e.target.value)}>
                      {TRANSMISSIONS.map(t => <option key={t} value={t}>{t}</option>)}
                    </select>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-xl border border-grey-200 shadow-sm space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold text-strong-black">Custom Features</h3>
+            <div className={sectionClass}>
+              <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">Custom Features</h2>
+              <div className="flex gap-3 items-end mb-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Feature</label>
+                  <input type="text" className="w-full p-2 border border-gray-300 rounded text-sm text-black" placeholder="e.g. Sunroof" value={newSpec.key} onChange={(e) => setNewSpec({...newSpec, key: e.target.value})} />
+                </div>
+                <div className="flex-1">
+                   <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Value</label>
+                  <input type="text" className="w-full p-2 border border-gray-300 rounded text-sm text-black" placeholder="e.g. Panoramic" value={newSpec.value} onChange={(e) => setNewSpec({...newSpec, value: e.target.value})} />
+                </div>
+                <button onClick={addCustomSpec} className="h-[38px] px-3 bg-black text-white rounded hover:bg-gray-800 flex items-center justify-center">
+                  <Plus size={16} />
+                </button>
               </div>
-              <div className="flex gap-4 items-end bg-off-white p-4 rounded-lg">
-                <input type="text" className="flex-1 p-3 rounded-lg border border-grey-300" placeholder="Feature Name" value={newSpec.key} onChange={(e) => setNewSpec({...newSpec, key: e.target.value})} />
-                <input type="text" className="flex-1 p-3 rounded-lg border border-grey-300" placeholder="Value" value={newSpec.value} onChange={(e) => setNewSpec({...newSpec, value: e.target.value})} />
-                <button onClick={addCustomSpec} className="p-3 bg-black text-white rounded-lg"><Plus size={20} /></button>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {customSpecs.map((spec, idx) => (
-                  <div key={idx} className="flex justify-between p-3 border rounded-lg">
-                    <span>{spec.key}: {spec.value}</span>
-                    <button onClick={() => removeCustomSpec(idx)}><Trash2 size={16} /></button>
-                  </div>
-                ))}
-              </div>
+              
+              {customSpecs.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {customSpecs.map((spec, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded text-sm">
+                      <span className="text-gray-900 font-medium">{spec.key}: <span className="text-gray-600 font-normal">{spec.value}</span></span>
+                      <button onClick={() => removeCustomSpec(idx)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 italic text-center py-2">No custom features added.</p>
+              )}
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* STEP 3: FINANCIALS & REVIEW */}
+        {/* STEP 3: REVIEW & PRICING */}
         {step === 3 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-            <div className="bg-off-white p-8 rounded-xl border border-grey-200 space-y-6">
-              <h3 className="text-lg font-bold text-strong-black flex items-center gap-2">Financials (Internal)</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Base Cost (Purchase Price)</label>
-                   <input type="number" className="w-full p-3 rounded-lg border border-grey-300 bg-white" placeholder="0.00" value={formData.basePrice} onChange={(e) => handleChange("basePrice", e.target.value)} />
+          <div className="space-y-6">
+            <div className={sectionClass}>
+              <h2 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100">Pricing</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <label className={labelClass}>Base Cost (Private)</label>
+                   <div className="relative">
+                      <span className="absolute left-3 top-3.5 text-gray-500 text-sm font-bold">KES</span>
+                      <input type="number" className={`${inputClass} pl-12`} placeholder="0.00" value={formData.basePrice} onChange={(e) => handleChange("basePrice", e.target.value)} />
+                   </div>
                 </div>
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-grey-500 uppercase tracking-wider">Selling Price (Public)</label>
-                   <input type="number" className="w-full p-3 rounded-lg border border-grey-300 bg-white" placeholder="0.00" value={formData.sellingPrice} onChange={(e) => handleChange("sellingPrice", e.target.value)} />
+                <div>
+                   <label className={labelClass}>Listing Price (Public)</label>
+                   <div className="relative">
+                      <span className="absolute left-3 top-3.5 text-gray-500 text-sm font-bold">KES</span>
+                      <input type="number" className={`${inputClass} pl-12`} placeholder="0.00" value={formData.sellingPrice} onChange={(e) => handleChange("sellingPrice", e.target.value)} />
+                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-black text-white p-8 rounded-xl">
-              <h3 className="text-xl font-bold mb-4">Review Summary</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
-                <p>Vehicle: <span className="text-white font-medium">{formData.brand} {formData.model}</span></p>
-                <p>Year: <span className="text-white font-medium">{formData.year}</span></p>
-                <p>Price: <span className="text-white font-medium">{formData.sellingPrice}</span></p>
-                <p>Features: <span className="text-white font-medium">{customSpecs.length} custom specs</span></p>
+            <div className="bg-black text-white rounded-xl p-8 shadow-xl">
+              <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+                <CheckCircle2 className="text-green-500" size={20} /> Review Summary
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                 <div>
+                    <span className="block text-gray-500 text-xs uppercase font-bold mb-1">Vehicle</span>
+                    <span className="text-white font-medium text-lg">{formData.brand} {formData.model}</span>
+                 </div>
+                 <div>
+                    <span className="block text-gray-500 text-xs uppercase font-bold mb-1">Year</span>
+                    <span className="text-white font-medium text-lg">{formData.year}</span>
+                 </div>
+                 <div>
+                    <span className="block text-gray-500 text-xs uppercase font-bold mb-1">Features</span>
+                    <span className="text-white font-medium text-lg">{customSpecs.length} items</span>
+                 </div>
+                 <div>
+                    <span className="block text-gray-500 text-xs uppercase font-bold mb-1">Listing Price</span>
+                    <span className="text-white font-medium text-lg">{formData.sellingPrice ? `KES ${Number(formData.sellingPrice).toLocaleString()}` : '-'}</span>
+                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-64 right-0 p-6 bg-white border-t border-grey-200 flex justify-between z-40">
-        <button onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1 || isPending} className="flex items-center gap-2 text-grey-500 hover:text-black disabled:opacity-30"><ChevronLeft /> Back</button>
-        
-        {step < 3 ? (
-          <button onClick={() => setStep(Math.min(3, step + 1))} disabled={(step === 1 && !isStep1Valid)} className="flex items-center gap-2 px-8 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50">Continue <ChevronRight /></button>
-        ) : (
-          <button onClick={handleSubmit} disabled={isPending} className="flex items-center gap-2 px-8 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50">
-            {isPending ? <Loader2 className="animate-spin" /> : "Save & Publish"}
+      {/* FOOTER ACTIONS */}
+      <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-200 z-50">
+        <div className="max-w-3xl mx-auto flex justify-between items-center">
+          <button 
+            onClick={() => setStep(Math.max(1, step - 1))} 
+            disabled={step === 1 || isPending} 
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-black disabled:opacity-30 text-sm font-bold uppercase tracking-wider transition-colors"
+          >
+            <ChevronLeft size={16}/> Back
           </button>
-        )}
+          
+          {step < 3 ? (
+            <button 
+              onClick={() => setStep(Math.min(3, step + 1))} 
+              disabled={(step === 1 && !isStep1Valid)} 
+              className="flex items-center gap-2 px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 font-bold uppercase tracking-wider shadow-lg transition-transform active:scale-95"
+            >
+              Continue <ChevronRight size={16}/>
+            </button>
+          ) : (
+            <button 
+              onClick={handleSubmit} 
+              disabled={isPending} 
+              className="flex items-center gap-2 px-10 py-3 bg-black text-white rounded-lg hover:bg-gray-900 disabled:opacity-70 font-bold uppercase tracking-wider shadow-lg transition-all"
+            >
+              {isPending ? <><Loader2 className="animate-spin" size={18}/> Processing...</> : "Save Vehicle"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

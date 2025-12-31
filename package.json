@@ -19,5 +19,8 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "turbo": "^2.7.2"
+  },
+  "dependencies": {
+    "use-debounce": "^10.0.6"
   }
 }

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalOrWindow as unknown as {
+const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
@@ -11,11 +11,3 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-// Polyfill for global/window in different environments
-declare const globalOrWindow: any;
-if (typeof window !== "undefined") {
-  (window as any).globalOrWindow = window;
-} else {
-  (global as any).globalOrWindow = global;
-}
