@@ -16,7 +16,7 @@ function getIcon(name: string) {
 }
 
 export function CategoryGrid() {
-  // FIXED: Removed unused 'setCategories'
+  // FIXED: Removed unused 'setCategories' to pass linting
   const [categories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   return (
