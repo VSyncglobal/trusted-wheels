@@ -1,13 +1,13 @@
-import { prisma } from "@repo/database";
-import { CheckCircle, XCircle, Clock, Phone, Mail } from "lucide-react";
-import { updateRequestStatus } from "./actions"; // We will create this next
+import { prisma } from "@repo/database"
+import { CheckCircle, XCircle, Clock, ArrowRight, Phone, Mail, Car } from "lucide-react"
+import { markAsContacted, markAsRejected } from "./actions"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 export default async function RequestsPage() {
   const requests = await prisma.listingRequest.findMany({
-    orderBy: { createdAt: "desc" }
-  });
+    orderBy: { createdAt: 'desc' }
+  })
 
   return (
     <div className="space-y-8 pb-20">
@@ -15,97 +15,94 @@ export default async function RequestsPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
         <div>
-           <h1 className="text-4xl font-extrabold text-black tracking-tight mb-2">Valuation Requests</h1>
-           <p className="text-gray-500 font-medium">Incoming leads from "Sell Your Car" form.</p>
+          <h1 className="text-4xl font-extrabold text-black tracking-tight mb-2">Incoming Leads</h1>
+          <p className="text-gray-500 font-medium">Review and process "Sell Your Car" submissions.</p>
+        </div>
+        <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+           <Clock size={16}/> Pending: {requests.filter((r: any) => r.status === "PENDING").length}
         </div>
       </div>
 
-      {/* LIST */}
       <div className="space-y-4">
-        {requests.length === 0 ? (
-           <div className="p-16 text-center bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
-             <p className="text-gray-400 font-bold">No requests found.</p>
-           </div>
-        ) : (
-          requests.map((req) => (
-            <div key={req.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all flex flex-col lg:flex-row gap-6 lg:items-center">
-               
-               {/* STATUS INDICATOR */}
-               <div className={`w-2 h-full absolute left-0 top-0 bottom-0 rounded-l-[2rem] 
-                 ${req.status === 'PENDING' ? 'bg-amber-500' : req.status === 'CONTACTED' ? 'bg-blue-500' : req.status === 'REJECTED' ? 'bg-gray-200' : 'bg-green-500'}`} 
-               />
-
-               {/* MAIN INFO */}
-               <div className="flex-1 pl-4">
-                  <div className="flex items-center gap-3 mb-2">
-                     <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-lg 
-                       ${req.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
-                       {req.status}
-                     </span>
-                     <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
-                       <Clock size={12}/> {new Date(req.createdAt).toLocaleDateString()}
-                     </span>
-                  </div>
-                  <h3 className="text-2xl font-extrabold text-black">
-                    {req.year} {req.make} {req.model}
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-xs font-bold text-gray-500">
-                     <div>
-                        <span className="block text-[10px] text-gray-300 uppercase tracking-widest">Mileage</span>
-                        {req.mileage.toLocaleString()} km
-                     </div>
-                     <div>
-                        <span className="block text-[10px] text-gray-300 uppercase tracking-widest">Condition</span>
-                        {req.condition}
-                     </div>
-                     <div>
-                        <span className="block text-[10px] text-gray-300 uppercase tracking-widest">Expected</span>
-                        {req.expectedPrice ? `KES ${Number(req.expectedPrice).toLocaleString()}` : 'N/A'}
-                     </div>
-                  </div>
-               </div>
-
-               {/* CONTACT CARD */}
-               <div className="bg-gray-50 p-4 rounded-2xl min-w-[250px]">
-                  <h4 className="font-extrabold text-black text-sm mb-3">{req.name}</h4>
-                  <div className="space-y-2">
-                     <a href={`tel:${req.phone}`} className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors">
-                        <Phone size={14} className="text-blue-500"/> {req.phone}
-                     </a>
-                     {req.email && (
-                       <a href={`mailto:${req.email}`} className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors">
-                          <Mail size={14} className="text-blue-500"/> {req.email}
-                       </a>
-                     )}
-                  </div>
-               </div>
-
-               {/* ACTIONS */}
-               <div className="flex flex-row lg:flex-col gap-2">
-                  <StatusButton id={req.id} status="CONTACTED" label="Mark Contacted" icon={<CheckCircle size={16}/>} current={req.status} />
-                  <StatusButton id={req.id} status="REJECTED" label="Reject Offer" icon={<XCircle size={16}/>} current={req.status} />
-               </div>
-
+         {requests.length === 0 ? (
+            <div className="p-12 text-center bg-white/50 border border-dashed border-gray-200 rounded-[2rem]">
+               <Car size={48} className="mx-auto text-gray-300 mb-4" />
+               <p className="text-gray-400 font-bold">No new requests found.</p>
             </div>
-          ))
-        )}
+         ) : (
+           // FIX: Explicitly type 'req' as any to pass build strictness
+           requests.map((req: any) => (
+             <div key={req.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all flex flex-col lg:flex-row gap-6 lg:items-center">
+                
+                {/* STATUS INDICATOR */}
+                <div className={`shrink-0 w-2 self-stretch rounded-full ${
+                    req.status === 'PENDING' ? 'bg-amber-400' :
+                    req.status === 'CONTACTED' ? 'bg-blue-500' :
+                    req.status === 'CONVERTED' ? 'bg-emerald-500' : 'bg-red-200'
+                }`}/>
+
+                {/* VEHICLE INFO */}
+                <div className="flex-1 min-w-[200px]">
+                   <h3 className="text-xl font-extrabold text-black">{req.year} {req.make} {req.model}</h3>
+                   <div className="flex flex-wrap gap-3 mt-2 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                      <span className="bg-gray-100 px-2 py-1 rounded-md">{req.mileage.toLocaleString()} KM</span>
+                      <span className="bg-gray-100 px-2 py-1 rounded-md">{req.condition}</span>
+                      {req.expectedPrice && <span className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md">Expected: KES {Number(req.expectedPrice).toLocaleString()}</span>}
+                   </div>
+                </div>
+
+                {/* CONTACT INFO */}
+                <div className="flex-1 min-w-[200px] border-l border-gray-100 pl-6 space-y-2">
+                   <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                      <UserIcon /> {req.name}
+                   </div>
+                   <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                      <Phone size={12}/> {req.phone}
+                   </div>
+                   {req.email && (
+                      <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                         <Mail size={12}/> {req.email}
+                      </div>
+                   )}
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex items-center gap-2 lg:ml-auto">
+                   {req.status === "PENDING" && (
+                     <>
+                        <form action={markAsContacted.bind(null, req.id)}>
+                           <button className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors">
+                              <CheckCircle size={14}/> Mark Contacted
+                           </button>
+                        </form>
+                        <form action={markAsRejected.bind(null, req.id)}>
+                           <button className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">
+                              <XCircle size={14}/> Reject
+                           </button>
+                        </form>
+                     </>
+                   )}
+                   {req.status === "CONTACTED" && (
+                      <button className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all">
+                         Convert to Stock <ArrowRight size={14}/>
+                      </button>
+                   )}
+                   {['CONVERTED', 'REJECTED'].includes(req.status) && (
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{req.status}</span>
+                   )}
+                </div>
+
+             </div>
+           ))
+         )}
       </div>
+
     </div>
   )
 }
 
-// Client Component for Buttons (Inline for simplicity)
-import { ButtonHTMLAttributes } from "react";
-function StatusButton({ id, status, label, icon, current }: any) {
-  if (current === status || current === 'REJECTED') return null; // Hide if already set
-  
+function UserIcon() {
   return (
-    <form action={updateRequestStatus}>
-       <input type="hidden" name="id" value={id} />
-       <input type="hidden" name="status" value={status} />
-       <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white border border-gray-200 shadow-sm text-xs font-bold uppercase hover:bg-black hover:text-white transition-all w-full justify-center">
-         {icon} {label}
-       </button>
-    </form>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
   )
 }
