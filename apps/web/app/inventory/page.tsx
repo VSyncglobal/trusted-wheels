@@ -1,9 +1,11 @@
 import { prisma } from "@repo/database";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Filter, Car, ChevronRight } from "lucide-react";
+import { Search, Car } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+// PERFORMANCE FIX: Use ISR instead of Force Dynamic
+// This caches the page for 60 seconds, drastically improving speed/SEO
+export const revalidate = 60;
 
 // --- HELPERS ---
 
@@ -17,7 +19,7 @@ async function getBrandCounts() {
   return result.map(r => ({ label: r.make, count: r._count })).sort((a,b) => b.count - a.count);
 }
 
-// 2. Get Body Type Counts (Fix for "Browse by Type" filtering)
+// 2. Get Body Type Counts
 async function getBodyTypeCounts() {
   const result = await prisma.vehicle.groupBy({
     by: ['bodyType'],
@@ -43,7 +45,7 @@ export default async function InventoryPage({
     where.OR = [
       { make: { contains: params.q, mode: 'insensitive' } },
       { model: { contains: params.q, mode: 'insensitive' } },
-      { stockNumber: { contains: params.q, mode: 'insensitive' } } // Allow searching by Stock #
+      { stockNumber: { contains: params.q, mode: 'insensitive' } }
     ];
   }
 
@@ -100,7 +102,7 @@ export default async function InventoryPage({
                  </div>
               </div>
 
-              {/* Body Type Filter (Dynamic now) */}
+              {/* Body Type Filter */}
               <div>
                  <h3 className="font-extrabold text-black mb-4 uppercase text-xs tracking-widest flex items-center gap-2">
                     Body Type <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{bodyTypes.length}</span>
@@ -155,7 +157,7 @@ export default async function InventoryPage({
                                <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-xs">NO IMAGE</div>
                             )}
                             
-                            {/* Dynamic Stock Number (FIXED) */}
+                            {/* Stock Number */}
                             <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white uppercase tracking-wider">
                                {car.stockNumber}
                             </div>

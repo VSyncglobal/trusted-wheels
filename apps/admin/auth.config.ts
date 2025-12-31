@@ -22,15 +22,20 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
-      const isOnDashboard = nextUrl.pathname !== "/login"
+      
+      // FIX: Use 'startsWith' to handle query params (e.g., /login?error=...)
+      const isOnLoginPage = nextUrl.pathname.startsWith("/login")
 
-      if (isOnDashboard) {
-        if (isLoggedIn) return true
-        return false // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl))
+      if (isOnLoginPage) {
+        // If logged in and on login page, redirect to dashboard
+        if (isLoggedIn) return Response.redirect(new URL("/", nextUrl))
+        
+        // If not logged in, allow access to login page
+        return true
       }
-      return true
+
+      // For all other routes (Dashboard), require login
+      return isLoggedIn
     },
     async jwt({ token, user }) {
       if (user) {
