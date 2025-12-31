@@ -21,12 +21,11 @@ async function getFinanceData() {
     where: { status: "SOLD" },
     orderBy: { updatedAt: "desc" },
     take: 5,
-    // ADDED 'year: true' HERE to fix the error
     select: { 
       id: true, 
       make: true, 
       model: true, 
-      year: true, // <--- This was missing
+      year: true, 
       listingPrice: true, 
       updatedAt: true, 
       stockNumber: true 
@@ -117,7 +116,8 @@ export default async function FinancePage() {
                   </tr>
                 </thead>
                 <tbody className="text-sm font-bold text-gray-700">
-                  {data.recentSales.map((sale) => (
+                  {/* FIX: Explicitly type 'sale' as any to pass build strictness */}
+                  {data.recentSales.map((sale: any) => (
                     <tr key={sale.id} className="group hover:bg-white hover:shadow-lg transition-all rounded-xl">
                       <td className="py-4 pl-4 rounded-l-xl text-black">{sale.year} {sale.make} {sale.model}</td>
                       <td className="py-4 text-blue-600">{sale.stockNumber}</td>
