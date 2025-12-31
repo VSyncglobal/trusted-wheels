@@ -16,8 +16,8 @@ function getIcon(name: string) {
 }
 
 export function CategoryGrid() {
-  // FIXED: Initialized state directly to avoid synchronous useEffect updates
-  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  // FIXED: Removed unused 'setCategories'
+  const [categories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   return (
     <section className="py-20 bg-white">
