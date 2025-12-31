@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react"
 import { submitListingRequest } from "./actions"
-import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react"
+// FIXED: Removed unused Loader2 import
+import { ArrowRight, CheckCircle2 } from "lucide-react"
 
 // Styles
 const inputClass = "w-full border-b border-gray-300 bg-transparent py-3 text-lg text-strong-black placeholder-gray-400 focus:border-black focus:outline-none transition-colors"

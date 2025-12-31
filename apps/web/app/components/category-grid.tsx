@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Car, Truck, Zap, Activity } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // Fallback data
 const DEFAULT_CATEGORIES = [
@@ -16,15 +16,8 @@ function getIcon(name: string) {
 }
 
 export function CategoryGrid() {
-  const [categories, setCategories] = useState<string[]>([]); // Initialize empty
-
-  // FIX: Using DEFAULT_CATEGORIES as initial state prevents the need for an effect
-  // But if we want to simulate fetching, we keep the effect
-  useEffect(() => {
-    // If fetching logic existed, it would go here.
-    // Since we are using static defaults for now, we can just set them directly
-    setCategories(DEFAULT_CATEGORIES);
-  }, []);
+  // FIXED: Initialized state directly to avoid synchronous useEffect updates
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   return (
     <section className="py-20 bg-white">

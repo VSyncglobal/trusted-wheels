@@ -9,7 +9,8 @@ export default function FinancingPage() {
       <div className="max-w-[1400px] mx-auto px-6 mb-16 text-center">
         <h1 className="text-5xl font-extrabold text-black tracking-tight mb-6">Drive Your Dream Today.</h1>
         <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-           We believe owning a car should be exciting, not stressful. That's why we offer multiple flexible payment paths tailored to your financial comfort.
+           {/* FIXED: Escaped apostrophe */}
+           We believe owning a car should be exciting, not stressful. That&apos;s why we offer multiple flexible payment paths tailored to your financial comfort.
         </p>
       </div>
 

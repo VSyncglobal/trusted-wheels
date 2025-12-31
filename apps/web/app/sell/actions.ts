@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from "@repo/database"
-import { revalidatePath } from "next/cache"
+// FIXED: Removed unused revalidatePath import
 
 export async function submitListingRequest(formData: FormData) {
   try {

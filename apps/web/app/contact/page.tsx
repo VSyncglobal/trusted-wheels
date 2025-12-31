@@ -1,4 +1,5 @@
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
+// FIXED: Removed 'Mail' from imports
+import { MapPin, Phone, Clock } from "lucide-react"
 
 export const metadata = { title: "Contact | Trust Rides" }
 

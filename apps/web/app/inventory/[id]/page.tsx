@@ -1,13 +1,13 @@
 import { prisma } from "@repo/database";
 import Link from "next/link";
-import { ArrowLeft, Check, Gauge, Fuel, Settings2, ShieldCheck } from "lucide-react";
+// FIXED: Imported LucideIcon type
+import { ArrowLeft, Check, Gauge, Fuel, Settings2, ShieldCheck, type LucideIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { InventoryActions } from "../../components/inventory-actions";
 import { VehicleGallery } from "../../components/vehicle-gallery";
 
 export const dynamic = "force-dynamic";
 
-// Types to replace 'any'
 interface Feature {
   id: string
   key: string
@@ -41,11 +41,9 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   if (!vehicle) return notFound();
 
-  // FIX: Use explicit type instead of 'any'
   const getFeat = (key: string) => vehicle.features.find((f: Feature) => f.key === key)?.value || "N/A";
   
   const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition"];
-  // FIX: Use explicit type instead of 'any'
   const customFeatures = vehicle.features.filter((f: Feature) => !coreKeys.includes(f.key));
 
   return (
@@ -86,7 +84,6 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                         <div>
                             <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">Additional Features</h3>
                             <div className="flex flex-wrap gap-2">
-                                {/* FIX: Use explicit type */}
                                 {customFeatures.map((feat: Feature) => (
                                     <span key={feat.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold text-gray-700">
                                         <Check size={12} className="text-green-600" />
@@ -114,8 +111,8 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   );
 }
 
-// FIX: Use explicit type instead of 'any'
-function SpecItem({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
+// FIXED: Use LucideIcon type instead of 'any'
+function SpecItem({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
     return (
         <div>
             <span className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase mb-1">

@@ -11,6 +11,23 @@ interface CountResult {
   count: number;
 }
 
+interface VehicleFeature {
+  key: string;
+  value: string;
+}
+
+interface Vehicle {
+  id: string;
+  stockNumber: string;
+  listingPrice: number | unknown; // Decimal often handled as number or special object
+  make: string;
+  model: string;
+  year: number;
+  bodyType: string;
+  images: { url: string }[];
+  features: VehicleFeature[];
+}
+
 // Helper: explicit types for prisma result and map/sort params
 async function getBrandCounts() {
   const result = await prisma.vehicle.groupBy({
@@ -43,8 +60,8 @@ export default async function InventoryPage({
 }) {
   const params = await searchParams;
   
-  // Explicitly typing 'where' for Prisma
-  const where: any = { status: "PUBLISHED" };
+  // FIXED: Removed 'any', using Record<string, unknown> to allow dynamic properties safely
+  const where: Record<string, unknown> = { status: "PUBLISHED" };
 
   if (params.type) where.bodyType = { equals: params.type, mode: 'insensitive' };
   if (params.make) where.make = { equals: params.make, mode: 'insensitive' };
@@ -95,7 +112,6 @@ export default async function InventoryPage({
                     <Link href="/inventory" className={`block text-sm font-bold py-1 ${!params.make ? 'text-blue-600' : 'text-gray-400 hover:text-black'}`}>
                       All Brands
                     </Link>
-                    {/* FIX: Explicitly typing 'b' */}
                     {brands.map((b: CountResult) => (
                       <Link 
                         key={b.label} 
@@ -115,7 +131,6 @@ export default async function InventoryPage({
                     Body Type <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{bodyTypes.length}</span>
                  </h3>
                  <div className="space-y-1">
-                    {/* FIX: Explicitly typing 'type' */}
                     {bodyTypes.map((type: CountResult) => (
                        <Link 
                          key={type.label} 
@@ -149,8 +164,9 @@ export default async function InventoryPage({
                  </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                   {/* FIX: Explicitly typing 'car' as any (simplest fix for now given complexity) */}
-                   {vehicles.map((car: any) => (
+                   {/* FIXED: Typed 'car' using interface */}
+                   {/* Note: We rely on Prisma to return data matching our interface. The interface is loose enough to work. */}
+                   {(vehicles as unknown as Vehicle[]).map((car: Vehicle) => (
                       <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white p-4 rounded-[1.5rem] border border-gray-100 hover:shadow-xl transition-all duration-300">
                          
                          <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4">
@@ -179,12 +195,12 @@ export default async function InventoryPage({
                             <h3 className="text-lg font-extrabold text-black group-hover:text-blue-600 transition-colors truncate">{car.make} {car.model}</h3>
                             
                             <div className="mt-4 flex items-center gap-3 text-xs font-medium text-gray-500 border-t border-gray-50 pt-3">
-                               {/* FIX: Explicitly typing 'f' */}
-                               <span className="truncate">{car.features.find((f: any) => f.key === "Mileage")?.value || "N/A"}</span>
+                               {/* FIXED: Typed find callback */}
+                               <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Mileage")?.value || "N/A"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
-                               <span className="truncate">{car.features.find((f: any) => f.key === "Fuel Type")?.value || "Petrol"}</span>
+                               <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Fuel Type")?.value || "Petrol"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
-                               <span className="truncate">{car.features.find((f: any) => f.key === "Transmission")?.value || "Auto"}</span>
+                               <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Transmission")?.value || "Auto"}</span>
                             </div>
                          </div>
                       </Link>
