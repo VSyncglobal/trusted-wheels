@@ -64,23 +64,21 @@ export async function updateVehicleGallery(
 export async function updateVehicleDetails(vehicleId: string, data: any) {
   try {
     // 1. Prepare Features
-    // We filter out empty fixed values, but keep all custom specs
     const fixedFeatures = [
       { key: "Engine Size", value: data.engineSizeCC ? `${data.engineSizeCC} cc` : "" },
       { key: "Mileage", value: data.mileage ? `${data.mileage} km` : "" },
       { key: "Fuel Type", value: data.fuelType },
       { key: "Transmission", value: data.transmission },
-      // Note: We don't force 'Condition' into features anymore, 
-      // it lives in the column, but you can keep it here for display if you want.
     ].filter(f => f.value && f.value !== "")
 
     const allFeatures = [
         ...fixedFeatures, 
-        ...(data.customSpecs || []) // This allows duplicates (e.g. multiple "Brand" keys)
+        ...(data.customSpecs || []) 
     ]
 
     // 2. Transaction
-    await prisma.$transaction(async (tx) => {
+    // FIX: Explicitly type 'tx' as any to pass build strictness
+    await prisma.$transaction(async (tx: any) => {
       // A. Update Core Fields (Including new 'condition' column)
       await tx.vehicle.update({
         where: { id: vehicleId },
@@ -89,8 +87,8 @@ export async function updateVehicleDetails(vehicleId: string, data: any) {
           model: data.model,
           year: parseInt(data.year),
           bodyType: data.type,
-          condition: data.condition, // <--- SAVING TO DB COLUMN
-          stockNumber: data.stockNumber, // Allow editing stock number
+          condition: data.condition, 
+          stockNumber: data.stockNumber,
           listingPrice: parseFloat(data.sellingPrice || "0"),
           status: data.status,
         }
@@ -119,15 +117,14 @@ export async function updateVehicleDetails(vehicleId: string, data: any) {
          }
       }
 
-      // C. Update Features (The "Delete All -> Re-create" Strategy)
-      // This is what enables you to edit/add multiple features with the same name.
+      // C. Update Features
       await tx.vehicleFeature.deleteMany({
         where: { vehicleId }
       })
       
       if (allFeatures.length > 0) {
         await tx.vehicleFeature.createMany({
-            data: allFeatures.map(f => ({
+            data: allFeatures.map((f: any) => ({
                 vehicleId,
                 key: f.key,
                 value: f.value
