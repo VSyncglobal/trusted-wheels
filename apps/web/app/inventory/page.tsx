@@ -13,7 +13,8 @@ async function getBrandCounts() {
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  return result.map(r => ({ label: r.make, count: r._count })).sort((a,b) => b.count - a.count);
+  // FIX: Explicitly type 'r' as any to satisfy build strictness
+  return result.map((r: any) => ({ label: r.make, count: r._count })).sort((a,b) => b.count - a.count);
 }
 
 async function getBodyTypeCounts() {
@@ -22,7 +23,8 @@ async function getBodyTypeCounts() {
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  return result.map(r => ({ label: r.bodyType, count: r._count })).sort((a,b) => b.count - a.count);
+  // FIX: Explicitly type 'r' as any to satisfy build strictness
+  return result.map((r: any) => ({ label: r.bodyType, count: r._count })).sort((a,b) => b.count - a.count);
 }
 
 export default async function InventoryPage({
