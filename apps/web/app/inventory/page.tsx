@@ -3,13 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Search, Car } from "lucide-react";
 
-// PERFORMANCE FIX: Use ISR instead of Force Dynamic
-// This caches the page for 60 seconds, drastically improving speed/SEO
 export const revalidate = 60;
 
 // --- HELPERS ---
 
-// 1. Get Brand Counts
 async function getBrandCounts() {
   const result = await prisma.vehicle.groupBy({
     by: ['make'],
@@ -19,7 +16,6 @@ async function getBrandCounts() {
   return result.map(r => ({ label: r.make, count: r._count })).sort((a,b) => b.count - a.count);
 }
 
-// 2. Get Body Type Counts
 async function getBodyTypeCounts() {
   const result = await prisma.vehicle.groupBy({
     by: ['bodyType'],
@@ -36,7 +32,6 @@ export default async function InventoryPage({
 }) {
   const params = await searchParams;
   
-  // Build Query
   const where: any = { status: "PUBLISHED" };
 
   if (params.type) where.bodyType = { equals: params.type, mode: 'insensitive' };
@@ -49,7 +44,6 @@ export default async function InventoryPage({
     ];
   }
 
-  // Fetch Data Parallel
   const [vehicles, brands, bodyTypes] = await Promise.all([
     prisma.vehicle.findMany({
       where,
@@ -141,7 +135,8 @@ export default async function InventoryPage({
                  </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                   {vehicles.map(car => (
+                   {/* FIX: Explicitly type 'car' as any */}
+                   {vehicles.map((car: any) => (
                       <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white p-4 rounded-[1.5rem] border border-gray-100 hover:shadow-xl transition-all duration-300">
                          
                          {/* Image */}
@@ -173,11 +168,12 @@ export default async function InventoryPage({
                             <h3 className="text-lg font-extrabold text-black group-hover:text-blue-600 transition-colors truncate">{car.make} {car.model}</h3>
                             
                             <div className="mt-4 flex items-center gap-3 text-xs font-medium text-gray-500 border-t border-gray-50 pt-3">
-                               <span className="truncate">{car.features.find(f => f.key === "Mileage")?.value || "N/A"}</span>
+                               {/* FIX: Explicitly type 'f' as any */}
+                               <span className="truncate">{car.features.find((f: any) => f.key === "Mileage")?.value || "N/A"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
-                               <span className="truncate">{car.features.find(f => f.key === "Fuel Type")?.value || "Petrol"}</span>
+                               <span className="truncate">{car.features.find((f: any) => f.key === "Fuel Type")?.value || "Petrol"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
-                               <span className="truncate">{car.features.find(f => f.key === "Transmission")?.value || "Auto"}</span>
+                               <span className="truncate">{car.features.find((f: any) => f.key === "Transmission")?.value || "Auto"}</span>
                             </div>
                          </div>
                       </Link>

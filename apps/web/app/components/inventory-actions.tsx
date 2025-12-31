@@ -7,6 +7,7 @@ interface InventoryActionsProps {
   price: number
   vehicleName: string
   stockNumber: string
+  vehicleId?: string // Added to fix build error
 }
 
 export function InventoryActions({ price, vehicleName, stockNumber }: InventoryActionsProps) {
@@ -35,7 +36,7 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
       <div className="mt-auto pt-10 space-y-4">
         <button 
           onClick={() => setActiveModal("INQUIRY")}
-          className="w-full bg-strong-black text-white h-14 rounded-sm text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-black text-white h-14 rounded-sm text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
         >
           <MessageCircle size={18} /> Enquire Now
         </button>
@@ -108,7 +109,7 @@ function FinanceCalculator({ price }: { price: number }) {
 
   return (
     <div className="p-8">
-      <h3 className="text-xl font-bold text-strong-black mb-1">Finance Calculator</h3>
+      <h3 className="text-xl font-bold text-black mb-1">Finance Calculator</h3>
       <p className="text-xs text-gray-500 mb-6">Estimate your monthly repayments.</p>
 
       <div className="space-y-6">
@@ -159,7 +160,7 @@ function FinanceCalculator({ price }: { price: number }) {
 
         <div className="bg-gray-50 p-6 rounded-sm border border-gray-100 text-center">
            <p className="text-xs font-bold uppercase text-gray-400 mb-1">Estimated Monthly Payment</p>
-           <p className="text-3xl font-bold text-strong-black">
+           <p className="text-3xl font-bold text-black">
              KES {Math.round(monthlyPayment).toLocaleString()}
            </p>
            <p className="text-[10px] text-gray-400 mt-2">
@@ -173,9 +174,7 @@ function FinanceCalculator({ price }: { price: number }) {
 
 // --- SUB-COMPONENT: INQUIRY FORM ---
 function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockNumber: string }) {
-  // Direct WhatsApp Link Generator
   const sendWhatsApp = () => {
-    // Replace this number with your actual business number
     const PHONE_NUMBER = "254705124564" 
     const message = `Hi, I am interested in the ${vehicleName} (Stock: ${stockNumber}). Is it still available?`
     const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
@@ -184,7 +183,7 @@ function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockN
 
   return (
     <div className="p-8">
-       <h3 className="text-xl font-bold text-strong-black mb-1">Make an Inquiry</h3>
+       <h3 className="text-xl font-bold text-black mb-1">Make an Inquiry</h3>
        <p className="text-xs text-gray-500 mb-8">Speak directly to our sales team.</p>
        
        <div className="space-y-4">
@@ -202,14 +201,10 @@ function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockN
 
           <a 
             href="tel:+254705124564"
-            className="w-full border border-gray-200 text-strong-black h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
+            className="w-full border border-gray-200 text-black h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
           >
             +254 705 124 564
           </a>
-          
-          <p className="text-center text-xs text-gray-400 pt-4">
-            We are available Mon-Sat, 8am - 6pm.
-          </p>
        </div>
     </div>
   )
