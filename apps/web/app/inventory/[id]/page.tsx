@@ -1,172 +1,146 @@
 import { prisma } from "@repo/database";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Check, Calendar, Gauge, Fuel, Settings2, ShieldCheck, Share2 } from "lucide-react";
-import { notFound } from "next/navigation";
+import { 
+  ArrowLeft, CheckCircle2, Phone, MessageCircle, Calendar, 
+  Gauge, Zap, Settings, ShieldCheck, MapPin
+} from "lucide-react";
 import { InventoryActions } from "../../components/inventory-actions";
+import { HeroSlider } from "../../components/hero-slider"; 
 
-// Force dynamic rendering to ensure we always show the latest status
-export const dynamic = "force-dynamic";
-
-// 1. Dynamic SEO Metadata
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const car = await prisma.vehicle.findUnique({
-    where: { id },
-    select: { make: true, model: true, year: true }
-  });
-  
-  if (!car) return { title: "Vehicle Not Found" };
-  return { 
-    title: `${car.year} ${car.make} ${car.model} | Trust Rides`,
-    description: `View full specifications and photos for this ${car.year} ${car.make} ${car.model}.`
-  };
-}
+export const revalidate = 60; // ISR Cache
 
 export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  // 2. Data Fetching
+
   const vehicle = await prisma.vehicle.findUnique({
     where: { id },
     include: {
-      images: { orderBy: { id: 'asc' } },
+      images: { orderBy: { order: 'asc' } },
       features: true
     }
   });
 
-  if (!vehicle) return notFound();
+  if (!vehicle || vehicle.status !== 'PUBLISHED') return notFound();
 
   // Helper to extract feature values safely
-  const getFeat = (key: string) => vehicle.features.find(f => f.key === key)?.value || "N/A";
+  // FIX: Explicitly type 'f' as any
+  const getFeat = (key: string) => vehicle.features.find((f: any) => f.key === key)?.value || "N/A";
   
   // Separate Core Specs from Custom Features for the UI
   const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition"];
-  const customFeatures = vehicle.features.filter(f => !coreKeys.includes(f.key));
+  // FIX: Explicitly type 'f' as any
+  const extraFeatures = vehicle.features.filter((f: any) => !coreKeys.includes(f.key));
 
   return (
-    <div className="min-h-screen bg-off-white">
+    <div className="min-h-screen bg-white pb-20">
       
-      {/* NAVIGATION BAR (Internal) */}
-      <div className="fixed top-24 left-6 z-40 hidden xl:block">
-        <Link 
-            href="/" 
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
-        >
-            <ArrowLeft size={14} /> Back
-        </Link>
+      {/* 1. HERO SECTION (Mobile Slider / Desktop Grid) */}
+      <div className="lg:h-[85vh] relative bg-black">
+         <HeroSlider images={vehicle.images} />
+         
+         <Link href="/inventory" className="absolute top-6 left-6 z-20 bg-white/10 backdrop-blur-md text-white p-3 rounded-full hover:bg-white hover:text-black transition-all">
+            <ArrowLeft size={24} />
+         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen">
-        
-        {/* LEFT COLUMN: IMMERSIVE GALLERY (Scrolls) */}
-        <div className="lg:col-span-7 xl:col-span-8 bg-gray-100 flex flex-col gap-1 p-1 lg:min-h-screen">
-            {vehicle.images.length === 0 ? (
-                <div className="h-[50vh] flex items-center justify-center text-gray-400 uppercase tracking-widest text-sm">
-                    No Images Available
-                </div>
-            ) : (
-                vehicle.images.map((img, idx) => (
-                    <div key={img.id} className="relative w-full aspect-[4/3] lg:aspect-[16/10]">
-                        <Image
-                            src={img.url}
-                            alt={`${vehicle.make} ${vehicle.model} - View ${idx + 1}`}
-                            fill
-                            className="object-cover"
-                            priority={idx === 0}
-                            sizes="(max-width: 1024px) 100vw, 70vw"
-                        />
-                    </div>
-                ))
-            )}
-        </div>
-
-        {/* RIGHT COLUMN: STICKY DETAILS (Fixed) */}
-        <div className="lg:col-span-5 xl:col-span-4 relative bg-white">
-            <div className="lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto scrollbar-hide">
-                <div className="p-8 md:p-12 flex flex-col gap-10 min-h-full">
-                    
-                    {/* 1. HEADER */}
-                    <div className="mt-12 lg:mt-20">
-                        <div className="flex items-center gap-3 mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">
-                             <span>Stock #{vehicle.stockNumber}</span>
-                             <span>•</span>
-                             <span>{vehicle.bodyType}</span>
+      <div className="max-w-[1400px] mx-auto px-6 -mt-20 relative z-10">
+         <div className="grid lg:grid-cols-3 gap-12">
+            
+            {/* 2. MAIN DETAILS */}
+            <div className="lg:col-span-2 space-y-8">
+               
+               {/* Header Card */}
+               <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                     <div>
+                        <div className="flex items-center gap-3 mb-2">
+                           <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest">{vehicle.condition}</span>
+                           <span className="text-gray-400 font-bold text-sm uppercase tracking-wider">{vehicle.stockNumber}</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold text-strong-black leading-[0.9] tracking-tight mb-2">
-                            {vehicle.year} {vehicle.make} <br/>
-                            <span className="text-gray-500">{vehicle.model}</span>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight mb-2">
+                           {vehicle.year} {vehicle.make} {vehicle.model}
                         </h1>
-                        <p className="text-2xl font-medium text-strong-black mt-6">
-                            KES {Number(vehicle.listingPrice).toLocaleString()}
-                        </p>
-                    </div>
+                        <p className="text-gray-500 font-medium text-lg">{vehicle.bodyType} • {getFeat("Engine Size")}</p>
+                     </div>
+                     <div className="text-left md:text-right">
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Cash Price</p>
+                        <h2 className="text-4xl font-extrabold text-blue-600 tracking-tight">
+                           KES {Number(vehicle.listingPrice).toLocaleString()}
+                        </h2>
+                     </div>
+                  </div>
 
-                    {/* 2. CORE SPECS GRID */}
-                    <div className="grid grid-cols-2 gap-y-8 gap-x-4 py-8 border-y border-black/5">
-                        <div>
-                            <span className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-1">
-                                <Gauge size={14} /> Mileage
-                            </span>
-                            <span className="text-lg font-medium text-strong-black">{getFeat("Mileage")}</span>
-                        </div>
-                        <div>
-                            <span className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-1">
-                                <Settings2 size={14} /> Engine
-                            </span>
-                            <span className="text-lg font-medium text-strong-black">{getFeat("Engine Size")}</span>
-                        </div>
-                        <div>
-                            <span className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-1">
-                                <Fuel size={14} /> Fuel
-                            </span>
-                            <span className="text-lg font-medium text-strong-black">{getFeat("Fuel Type")}</span>
-                        </div>
-                        <div>
-                            <span className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase mb-1">
-                                <ShieldCheck size={14} /> Transmission
-                            </span>
-                            <span className="text-lg font-medium text-strong-black">{getFeat("Transmission")}</span>
-                        </div>
-                    </div>
+                  {/* Key Specs Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-100">
+                     <SpecItem icon={Gauge} label="Mileage" value={getFeat("Mileage")} />
+                     <SpecItem icon={Zap} label="Fuel" value={getFeat("Fuel Type")} />
+                     <SpecItem icon={Settings} label="Trans." value={getFeat("Transmission")} />
+                     <SpecItem icon={Calendar} label="Year" value={vehicle.year.toString()} />
+                  </div>
+               </div>
 
-                    {/* 3. DETAILED FEATURES */}
-                    {customFeatures.length > 0 && (
-                        <div>
-                            <h3 className="text-sm font-bold text-strong-black uppercase tracking-widest mb-6">Features</h3>
-                            <ul className="grid grid-cols-1 gap-3">
-                                {customFeatures.map((feat) => (
-                                    <li key={feat.id} className="flex items-start gap-3 text-sm text-gray-600">
-                                        <Check size={16} className="text-green-600 mt-0.5 shrink-0" />
-                                        <span>
-                                            <span className="font-semibold text-gray-900">{feat.key}:</span> {feat.value}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+               {/* Description / Extra Features */}
+               <div className="bg-gray-50 p-10 rounded-[2.5rem]">
+                  <h3 className="text-2xl font-bold text-black mb-6">Vehicle Features</h3>
+                  {extraFeatures.length > 0 ? (
+                     <div className="grid md:grid-cols-2 gap-4">
+                        {/* FIX: Explicitly type 'feat' as any */}
+                        {extraFeatures.map((feat: any) => (
+                           <div key={feat.id} className="flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-200/50">
+                              <CheckCircle2 className="text-green-500 shrink-0" size={20} />
+                              <div>
+                                 <p className="text-xs font-bold text-gray-400 uppercase">{feat.key}</p>
+                                 <p className="font-bold text-black">{feat.value}</p>
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  ) : (
+                     <p className="text-gray-500 italic">No additional features listed.</p>
+                  )}
+               </div>
 
-                    
-                    {/* 4. ACTIONS (Interactive Component) */}
-                    <InventoryActions 
-                        price={Number(vehicle.listingPrice)} 
-                        vehicleName={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                        stockNumber={vehicle.stockNumber}
-                    />
-                    
-                    <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-wider">
-                        Verified by Trust Rides • {vehicle.status}
-                    </p>
-
-
-                    </div>
-
-                </div>
             </div>
-        </div>
 
+            {/* 3. SIDEBAR ACTIONS */}
+            <div className="space-y-6">
+               <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 sticky top-8">
+                  <h3 className="text-xl font-extrabold text-black mb-6">Interested?</h3>
+                  
+                  {/* Client Interaction Component */}
+                  <InventoryActions vehicleId={vehicle.id} vehicleName={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} />
+                  
+                  <div className="mt-8 pt-8 border-t border-gray-100 space-y-4">
+                     <div className="flex items-center gap-4 text-sm font-bold text-gray-600">
+                        <ShieldCheck className="text-blue-600" size={20}/>
+                        <span>Verified Inspection Report</span>
+                     </div>
+                     <div className="flex items-center gap-4 text-sm font-bold text-gray-600">
+                        <MapPin className="text-blue-600" size={20}/>
+                        <span>Available at Ridgeways Yard</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
       </div>
+    </div>
+  )
+}
 
-  );
+function SpecItem({ icon: Icon, label, value }: any) {
+   return (
+      <div className="flex items-center gap-3">
+         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600">
+            <Icon size={18} />
+         </div>
+         <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">{label}</p>
+            <p className="text-sm font-bold text-black truncate">{value}</p>
+         </div>
+      </div>
+   )
 }
