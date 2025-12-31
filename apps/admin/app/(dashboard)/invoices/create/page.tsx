@@ -5,26 +5,27 @@ import { createInvoiceAction } from "../actions"
 import { Plus, Trash2, Save, FileText, CheckSquare, Square } from "lucide-react"
 
 export default function CreateInvoicePage() {
-  const [items, setItems] = useState([{ id: Date.now(), desc: "", qty: 1, price: 0 }])
-  const [isTaxable, setIsTaxable] = useState(true) // <--- VAT TOGGLE STATE
+  // FIX: Type the state explicitly
+  const [items, setItems] = useState<any[]>([{ id: Date.now(), desc: "", qty: 1, price: 0 }])
+  const [isTaxable, setIsTaxable] = useState(true) 
   const [isPending, setIsPending] = useState(false)
 
   const addItem = () => setItems([...items, { id: Date.now(), desc: "", qty: 1, price: 0 }])
   const removeItem = (id: number) => setItems(items.filter((i) => i.id !== id))
   
+  // FIX: Explicitly type 'i'
   const updateItem = (id: number, field: string, value: any) => {
-    setItems(items.map((i) => i.id === id ? { ...i, [field]: value } : i))
+    setItems(items.map((i: any) => i.id === id ? { ...i, [field]: value } : i))
   }
 
   // Calculations
   const subtotal = items.reduce((sum, i) => sum + (i.price * i.qty), 0)
-  const taxRate = isTaxable ? 0.16 : 0 // <--- DYNAMIC RATE
+  const taxRate = isTaxable ? 0.16 : 0 
   const tax = subtotal * taxRate
   const total = subtotal + tax
 
   const handleSubmit = async (formData: FormData) => {
     setIsPending(true)
-    // Append calculated totals and items
     formData.append("items", JSON.stringify(items))
     formData.append("subtotal", subtotal.toString())
     formData.append("tax", tax.toString())
@@ -60,7 +61,8 @@ export default function CreateInvoicePage() {
               <button type="button" onClick={addItem} className="text-xs font-bold flex items-center gap-1 bg-black text-white px-3 py-1.5 rounded-lg hover:bg-gray-800"><Plus size={12} /> Add Item</button>
            </div>
            <div className="space-y-4">
-              {items.map((item) => (
+              {/* FIX: Explicitly type 'item' in loop */}
+              {items.map((item: any) => (
                 <div key={item.id} className="flex gap-4 items-center">
                    <input placeholder="Description" className="input-field text-sm" value={item.desc} onChange={(e) => updateItem(item.id, "desc", e.target.value)} />
                    <input type="number" placeholder="Qty" className="input-field w-20 text-sm text-center" value={item.qty} onChange={(e) => updateItem(item.id, "qty", parseInt(e.target.value))} />
@@ -75,7 +77,6 @@ export default function CreateInvoicePage() {
         <div className="flex justify-end">
            <div className="w-80 bg-white p-6 rounded-[2rem] border border-gray-200 shadow-sm space-y-4">
               
-              {/* VAT TOGGLE BUTTON */}
               <button 
                 type="button" 
                 onClick={() => setIsTaxable(!isTaxable)}

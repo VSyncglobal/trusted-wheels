@@ -96,7 +96,8 @@ export default async function AdminDashboard() {
             <button className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-widest">View All</button>
           </div>
           <div className="p-4 space-y-2">
-            {stats.recentActivity.map((item) => (
+            {/* FIX: Explicitly type 'item' as any */}
+            {stats.recentActivity.map((item: any) => (
               <div key={item.id} className="group flex items-center justify-between p-4 rounded-2xl hover:bg-white hover:shadow-lg hover:shadow-gray-100 transition-all duration-300 cursor-default">
                 <div className="flex items-center gap-5">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.color}`}>

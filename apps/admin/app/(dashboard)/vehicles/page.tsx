@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@repo/database";
 import { Plus, Edit2, Gauge, Calendar, SlidersHorizontal } from "lucide-react";
-import { Search } from "../../../components/search"; // <--- Import the new component
+import { Search } from "../../../components/search"; 
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,6 @@ export default async function InventoryPage({
           <h1 className="text-4xl font-extrabold text-black tracking-tight mb-2">Inventory</h1>
           <p className="text-gray-500 font-medium mb-6">Manage your fleet. Total: {vehicles.length} units.</p>
           
-          {/* SEARCH BAR ROW */}
           <div className="flex gap-4">
              <Search placeholder="Search make, model, or stock #..." />
              <button className="bg-white border-2 border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold text-sm hover:border-black hover:text-black transition-colors flex items-center gap-2">
@@ -63,8 +62,9 @@ export default async function InventoryPage({
             {query && <p className="text-gray-400 text-sm">Try adjusting your search terms.</p>}
           </div>
         ) : (
-          vehicles.map((car) => {
-            const mileage = car.features.find(f => f.key === "Mileage")?.value || "N/A";
+          // FIX: Explicitly type 'car' as any
+          vehicles.map((car: any) => {
+            const mileage = car.features.find((f: any) => f.key === "Mileage")?.value || "N/A";
             
             return (
               <div key={car.id} className="group bg-white/70 backdrop-blur-sm p-4 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
