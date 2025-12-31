@@ -6,7 +6,6 @@ import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
-// Fetch Latest (Horizontal Scroll)
 async function getFeaturedVehicles() {
   return await prisma.vehicle.findMany({
     where: { status: "PUBLISHED" },
@@ -16,13 +15,12 @@ async function getFeaturedVehicles() {
   });
 }
 
-// Fetch "Other" Vehicles (Grid Populator)
 async function getOtherVehicles() {
   return await prisma.vehicle.findMany({
     where: { status: "PUBLISHED" },
     include: { images: { orderBy: { id: 'asc' }, take: 1 }, features: true },
-    orderBy: { updatedAt: "desc" }, // Different sort order
-    skip: 10, // Skip the first 10
+    orderBy: { updatedAt: "desc" },
+    skip: 10, 
     take: 8,
   });
 }
@@ -36,13 +34,10 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-0">
       
-      {/* 1. HERO SLIDER */}
       <HeroSlider />
-
-      {/* 2. CATEGORY SEARCH */}
       <CategoryGrid />
 
-      {/* 3. LATEST ARRIVALS (Horizontal) */}
+      {/* LATEST ARRIVALS */}
       <section className="space-y-8 py-24 px-6 max-w-[1400px] mx-auto w-full">
         <div className="flex items-center justify-between">
            <h2 className="text-3xl font-bold text-black tracking-tight">Latest Arrivals</h2>
@@ -55,7 +50,8 @@ export default async function Page() {
               <p className="text-gray-400 italic">No inventory currently published.</p>
             </div>
           ) : (
-            vehicles.map((car) => (
+            // FIX: Explicitly type 'car' as any
+            vehicles.map((car: any) => (
               <Link key={car.id} href={`/inventory/${car.id}`} className="group relative min-w-[300px] md:min-w-[400px] snap-center block">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-gray-100 mb-4">
                   {car.images[0] ? (
@@ -63,7 +59,6 @@ export default async function Page() {
                   ) : (
                      <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-xs">NO IMAGE</div>
                   )}
-                  {/* Dynamic Stock # */}
                   <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white uppercase tracking-wider">
                      {car.stockNumber}
                   </div>
@@ -74,7 +69,8 @@ export default async function Page() {
                 <div>
                   <h3 className="text-xl font-bold text-black group-hover:text-gray-600 transition-colors">{car.year} {car.make} {car.model}</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    {car.bodyType} • {car.features.find(f => f.key === "Mileage")?.value || "0 km"}
+                    {/* FIX: Explicitly type 'f' as any */}
+                    {car.bodyType} • {car.features.find((f: any) => f.key === "Mileage")?.value || "0 km"}
                   </p>
                 </div>
               </Link>
@@ -83,13 +79,14 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* 4. EXPLORE MORE (The Populator) */}
+      {/* EXPLORE MORE */}
       {otherVehicles.length > 0 && (
         <section className="py-24 px-6 bg-gray-50 border-t border-gray-200">
            <div className="max-w-[1400px] mx-auto">
               <h2 className="text-3xl font-extrabold text-black tracking-tight mb-12 text-center">Explore More</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                 {otherVehicles.map(car => (
+                 {/* FIX: Explicitly type 'car' as any */}
+                 {otherVehicles.map((car: any) => (
                     <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300">
                        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4">
                           {car.images[0] ? (
@@ -115,9 +112,8 @@ export default async function Page() {
         </section>
       )}
 
-      {/* 5. VALUE PROPS */}
+      {/* VALUE PROPS */}
       <section className="grid md:grid-cols-3 gap-12 py-24 border-t border-black/5 px-6 max-w-[1400px] mx-auto w-full bg-white">
-        {/* ... (Keep existing value props) ... */}
          <div className="space-y-4">
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-black font-bold">1</div>
           <h3 className="text-lg font-bold text-black">Verified History</h3>
