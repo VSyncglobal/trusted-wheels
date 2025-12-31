@@ -13,8 +13,10 @@ async function getBrandCounts() {
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  // FIX: Explicitly type 'r' as any to satisfy build strictness
-  return result.map((r: any) => ({ label: r.make, count: r._count })).sort((a,b) => b.count - a.count);
+  // FIX: Explicitly type 'r', 'a', and 'b' to satisfy build strictness
+  return result
+    .map((r: any) => ({ label: r.make, count: r._count }))
+    .sort((a: any, b: any) => b.count - a.count);
 }
 
 async function getBodyTypeCounts() {
@@ -23,8 +25,10 @@ async function getBodyTypeCounts() {
     where: { status: 'PUBLISHED' },
     _count: true
   });
-  // FIX: Explicitly type 'r' as any to satisfy build strictness
-  return result.map((r: any) => ({ label: r.bodyType, count: r._count })).sort((a,b) => b.count - a.count);
+  // FIX: Explicitly type 'r', 'a', and 'b' to satisfy build strictness
+  return result
+    .map((r: any) => ({ label: r.bodyType, count: r._count }))
+    .sort((a: any, b: any) => b.count - a.count);
 }
 
 export default async function InventoryPage({
@@ -85,7 +89,7 @@ export default async function InventoryPage({
                     <Link href="/inventory" className={`block text-sm font-bold py-1 ${!params.make ? 'text-blue-600' : 'text-gray-400 hover:text-black'}`}>
                       All Brands
                     </Link>
-                    {brands.map(b => (
+                    {brands.map((b: any) => (
                       <Link 
                         key={b.label} 
                         href={`/inventory?make=${b.label}`}
@@ -104,7 +108,7 @@ export default async function InventoryPage({
                     Body Type <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{bodyTypes.length}</span>
                  </h3>
                  <div className="space-y-1">
-                    {bodyTypes.map(type => (
+                    {bodyTypes.map((type: any) => (
                        <Link 
                          key={type.label} 
                          href={`/inventory?type=${type.label}`}
