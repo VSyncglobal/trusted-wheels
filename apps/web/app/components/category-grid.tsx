@@ -1,66 +1,82 @@
-import { prisma } from "@repo/database";
+'use client'
+
 import Link from "next/link";
-import { Car, ChevronRight, Truck, Zap, Shield, Search } from "lucide-react";
+import { Car, Truck, Zap, Activity, Info } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export async function CategoryGrid() {
-  // 1. Fish for the "Body Type" template (Case Insensitive)
-  const bodyTypeTemplate = await prisma.featureTemplate.findFirst({
-    where: { label: { equals: "Body Type", mode: "insensitive" } }
-  });
+// Fallback data if DB fetch fails
+const DEFAULT_CATEGORIES = [
+  "SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe"
+];
 
-  const categories = bodyTypeTemplate?.options || [];
+function getIcon(name: string) {
+  if (name.includes("Truck")) return Truck;
+  if (name.includes("Electric")) return Zap;
+  return Car;
+}
 
-  // Helper to map icon based on name
-  const getIcon = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes("suv") || n.includes("4x4")) return Shield;
-    if (n.includes("truck") || n.includes("pickup")) return Truck;
-    if (n.includes("electric") || n.includes("hybrid")) return Zap;
-    return Car;
-  };
+export function CategoryGrid() {
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    // In a real scenario, you'd fetch this from an API endpoint
+    // For now, we simulate a delay or use defaults
+    setCategories(DEFAULT_CATEGORIES);
+  }, []);
 
   return (
-    <section className="py-12 bg-white px-6 border-b border-gray-100">
-       <div className="max-w-[1400px] mx-auto w-full">
+    <section className="py-20 bg-white">
+      <div className="max-w-[1400px] mx-auto px-6">
          
-         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <h2 className="text-2xl font-bold text-black tracking-tight">Browse by Type</h2>
-            <Link href="/inventory" className="text-xs font-bold uppercase text-gray-400 hover:text-black flex items-center gap-1">
-               See Full Inventory <ChevronRight size={14}/>
+         <div className="flex justify-between items-end mb-12">
+            <div>
+               <h2 className="text-4xl font-extrabold text-black tracking-tight mb-2">Browse by Type</h2>
+               <p className="text-gray-500 font-medium">Find the perfect match for your lifestyle.</p>
+            </div>
+            <Link href="/inventory" className="text-sm font-bold text-blue-600 hover:text-black transition-colors uppercase tracking-widest flex items-center gap-2">
+               View All Inventory <Activity size={16}/>
             </Link>
          </div>
 
          {categories.length === 0 ? (
-            <div className="bg-gray-50 rounded-2xl p-8 text-center border border-dashed border-gray-200">
-               <p className="text-gray-400 font-bold text-sm">System Configuration Required</p>
-               <p className="text-gray-400 text-xs mt-1">Please add "Body Type" options in the Admin Panel.</p>
+            <div className="p-12 text-center bg-gray-50 rounded-3xl">
+               <Loader />
             </div>
          ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {categories.slice(0, 5).map((cat) => {
+               {/* FIX: Explicitly type 'cat' as string */}
+               {categories.slice(0, 5).map((cat: string) => {
                   const Icon = getIcon(cat);
                   return (
-                    <Link 
-                      key={cat} 
-                      href={`/inventory?type=${cat}`} 
-                      className="group flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:border-black hover:bg-white hover:shadow-lg transition-all"
-                    >
-                       <div className="p-3 bg-white rounded-full text-gray-400 group-hover:text-black group-hover:bg-gray-100 transition-colors shadow-sm">
-                         <Icon size={24} strokeWidth={2} />
-                       </div>
-                       <span className="text-sm font-bold text-gray-600 group-hover:text-black text-center">{cat}</span>
-                    </Link>
+                     <Link 
+                       key={cat} 
+                       href={`/inventory?type=${cat}`}
+                       className="group flex flex-col items-center justify-center gap-4 bg-gray-50 hover:bg-black hover:text-white p-8 rounded-[2rem] transition-all duration-300"
+                     >
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-black group-hover:scale-110 transition-transform">
+                           <Icon size={28} strokeWidth={1.5} />
+                        </div>
+                        <span className="font-bold text-sm uppercase tracking-wider">{cat}</span>
+                     </Link>
                   )
-                })}
-                
-                {/* View All Card */}
-                <Link href="/inventory" className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-gray-200 hover:border-black hover:bg-gray-50 transition-all text-gray-400 hover:text-black">
-                   <div className="p-3"><Search size={24}/></div>
-                   <span className="text-sm font-bold">More Options</span>
-                </Link>
+               })}
+               <Link 
+                 href="/inventory"
+                 className="group flex flex-col items-center justify-center gap-4 bg-blue-50 hover:bg-blue-600 hover:text-white p-8 rounded-[2rem] transition-all duration-300"
+               >
+                  <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center text-blue-600 group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                     <Activity size={28} strokeWidth={1.5} />
+                  </div>
+                  <span className="font-bold text-sm uppercase tracking-wider">View All</span>
+               </Link>
             </div>
          )}
-       </div>
+
+      </div>
     </section>
   )
+}
+
+function Loader() {
+    return <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
 }
