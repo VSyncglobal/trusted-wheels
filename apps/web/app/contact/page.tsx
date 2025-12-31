@@ -27,7 +27,7 @@ export default function ContactPage() {
               <div className="flex gap-4">
                  <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full"><Phone size={20} /></div>
                  <div>
-                    <h3 className="font-bold text-strong-black">+254 700 000 000</h3>
+                    <h3 className="font-bold text-strong-black">+254 705 124 564</h3>
                     <p className="text-sm text-gray-500">Sales & Inquiries</p>
                  </div>
               </div>
@@ -44,7 +44,7 @@ export default function ContactPage() {
 
         {/* MAP PLACEHOLDER */}
         <div className="bg-gray-200 rounded-xl min-h-[400px] flex items-center justify-center">
-           <p className="text-gray-500 font-medium">Google Maps Integration</p>
+           <p className="text-gray-500 font-medium">WELCOME</p>
            {/* You can embed an iframe here later */}
         </div>
 

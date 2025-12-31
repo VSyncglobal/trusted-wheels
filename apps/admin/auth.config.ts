@@ -4,6 +4,9 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
+  session: { 
+    strategy: "jwt" 
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
@@ -17,6 +20,26 @@ export const authConfig = {
       }
       return true
     },
+    
+    // 1. ADD THIS: Transfer User Info to Token
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        // @ts-ignore
+        token.role = user.role
+      }
+      return token
+    },
+
+    // 2. ADD THIS: Transfer Token to Session (so Middleware sees it)
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string
+        // @ts-ignore
+        session.user.role = token.role as string
+      }
+      return session
+    }
   },
   providers: [], 
 } satisfies NextAuthConfig

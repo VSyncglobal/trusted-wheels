@@ -1,16 +1,17 @@
 'use server'
  
-import { signIn } from "../../auth" // <--- CHANGED FROM ../../../auth to ../../auth
+import { signIn } from "../../auth"
 import { AuthError } from "next-auth"
  
 export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
-    await signIn('credentials', formData)
+    // Force redirect to '/'
+    await signIn('credentials', formData, { redirectTo: '/' })
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials. Please check your email and password.'
+          return 'Invalid credentials.'
         default:
           return 'Something went wrong.'
       }

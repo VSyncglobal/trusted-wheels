@@ -4,24 +4,23 @@ import { prisma } from "@repo/database"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export async function createInvoice(formData: FormData) {
+// Renamed to match the import in your page
+export async function createInvoiceAction(formData: FormData) {
   const rawData = {
     clientName: formData.get("clientName") as string,
     clientEmail: formData.get("clientEmail") as string,
     clientPhone: formData.get("clientPhone") as string,
     clientKRA: formData.get("clientKRA") as string,
     dueDate: new Date(formData.get("dueDate") as string),
-    // Items are passed as hidden JSON string for simplicity in this form
     items: JSON.parse(formData.get("items") as string),
+    
+    // We now read these from the form data, respecting the VAT toggle you added
+    subtotal: parseFloat(formData.get("subtotal") as string),
+    tax: parseFloat(formData.get("tax") as string),
+    total: parseFloat(formData.get("total") as string),
   }
 
-  // Calculate Totals
-  const subtotal = rawData.items.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0)
-  const taxRate = 0.16 // 16% VAT (Adjust as needed)
-  const tax = subtotal * taxRate
-  const total = subtotal + tax
-
-  // Generate Invoice Number (Simple Auto-Increment Simulation)
+  // Generate Invoice Number
   const count = await prisma.invoice.count()
   const number = `INV-${new Date().getFullYear()}-${(count + 1).toString().padStart(3, '0')}`
 
@@ -33,9 +32,9 @@ export async function createInvoice(formData: FormData) {
       clientPhone: rawData.clientPhone,
       clientKRA: rawData.clientKRA,
       items: rawData.items,
-      subtotal,
-      tax,
-      total,
+      subtotal: rawData.subtotal,
+      tax: rawData.tax,
+      total: rawData.total,
       dueDate: rawData.dueDate,
       status: "DRAFT"
     }

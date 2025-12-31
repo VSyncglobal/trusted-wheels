@@ -16,6 +16,7 @@ enum Role {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String   // Hashed Password
   role      Role     @default(CONTENT_ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -34,7 +35,8 @@ model Vehicle {
   trim          String?       // e.g., AMG, M Sport
   bodyType      String        // Sedan, SUV, etc.
   
-  // Status
+  // Status & Condition
+  condition     String?       // e.g. "Foreign Used", "Locally Used"
   status        VehicleStatus @default(DRAFT)
   
   // Pricing (Public)

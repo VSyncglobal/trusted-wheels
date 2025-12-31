@@ -1,9 +1,12 @@
 import NextAuth from "next-auth"
 import { authConfig } from "./auth.config"
 
-export default NextAuth(authConfig).auth
+// 1. Initialize NextAuth with ONLY the lightweight config (No Prisma/Bcrypt)
+const { auth } = NextAuth(authConfig)
+
+export default auth
 
 export const config = {
-  // Protect all routes except static files and images
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  // 2. Protect all routes except static assets and login
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|login).*)'],
 }
