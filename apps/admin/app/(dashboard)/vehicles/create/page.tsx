@@ -2,13 +2,11 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Plus, Trash2, Loader2, CheckCircle2, Zap, Settings } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Trash2, Loader2, CheckCircle2, Zap, Settings } from "lucide-react";
 import Link from "next/link";
 import { createVehicleAction, getFeatureTemplates } from "./actions";
 
 // --- CONSTANTS ---
-// Years are generated automatically (Current Year back 30 years)
-// This requires zero maintenance from you.
 const YEARS = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i);
 const FUEL_TYPES = ["PETROL", "DIESEL", "HYBRID", "ELECTRIC"];
 const TRANSMISSIONS = ["AUTOMATIC", "MANUAL", "CVT"];
@@ -32,6 +30,9 @@ export default function CreateVehiclePage() {
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState(1);
   
+  // --- UI STATE ---
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+
   // --- DYNAMIC DATA STATE ---
   const [templates, setTemplates] = useState<Template[]>([]);
   const [brandOptions, setBrandOptions] = useState<string[]>([]);
@@ -42,11 +43,9 @@ export default function CreateVehiclePage() {
     getFeatureTemplates().then((data) => {
       setTemplates(data);
 
-      // 1. Find the "Brand" template (case-insensitive)
       const brands = data.find(t => t.label.toLowerCase().includes("brand"));
       if (brands) setBrandOptions(brands.options);
 
-      // 2. Find the "Body Type" template
       const types = data.find(t => t.label.toLowerCase().includes("body") || t.label.toLowerCase().includes("type"));
       if (types) setTypeOptions(types.options);
     });
@@ -58,7 +57,7 @@ export default function CreateVehiclePage() {
     model: "",
     year: "",
     type: "",
-    condition: "USED",
+    condition: "Foreign Used",
     engineSizeCC: "",
     transmission: "AUTOMATIC",
     fuelType: "PETROL",
@@ -74,15 +73,11 @@ export default function CreateVehiclePage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 1. ADD FROM TEMPLATE (The "Select Saved" Feature)
   const addFromTemplate = (templateId: string) => {
     if (!templateId) return;
     const template = templates.find(t => t.id === templateId);
     
-    // Don't add Brand/Body Type again if they are selected in templates
-    if (template && !template.label.toLowerCase().includes("brand") && !template.label.toLowerCase().includes("body")) {
-        if(customSpecs.find(s => s.key === template.label)) return;
-
+    if (template) {
         setCustomSpecs([
             ...customSpecs, 
             { 
@@ -95,7 +90,6 @@ export default function CreateVehiclePage() {
     }
   };
 
-  // 2. MANUAL ADD
   const addManualSpec = () => {
     if (newSpec.key && newSpec.value) {
       setCustomSpecs([...customSpecs, { ...newSpec }]);
@@ -103,7 +97,6 @@ export default function CreateVehiclePage() {
     }
   };
 
-  // 3. EDIT SPEC IN LIST
   const updateSpec = (index: number, field: 'key' | 'value', val: string) => {
     const updated = [...customSpecs];
     updated[index] = { ...updated[index], [field]: val };
@@ -128,7 +121,6 @@ export default function CreateVehiclePage() {
     });
   };
 
-  // Styles
   const labelClass = "block text-xs font-extrabold text-black uppercase tracking-widest mb-2 ml-1";
   const sectionClass = "bg-white/60 backdrop-blur-md p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 mb-8";
 
@@ -156,15 +148,12 @@ export default function CreateVehiclePage() {
           <div className={sectionClass}>
             <div className="flex justify-between items-start mb-8">
                <h2 className="text-2xl font-extrabold text-black">Vehicle Identity</h2>
-               {/* Quick Link to Edit Dropdowns */}
                <Link href="/features" target="_blank" className="flex items-center gap-1 text-[10px] font-bold uppercase bg-gray-100 px-3 py-1.5 rounded-lg text-gray-500 hover:bg-black hover:text-white transition-colors">
                   <Settings size={12}/> Edit Dropdowns
                </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-              {/* DYNAMIC BRAND DROPDOWN */}
               <div>
                 <label className={labelClass}>Brand</label>
                 {brandOptions.length === 0 ? (
@@ -184,7 +173,6 @@ export default function CreateVehiclePage() {
                 <input type="text" className="input-field" placeholder="e.g. C-Class" value={formData.model} onChange={(e) => handleChange("model", e.target.value)} />
               </div>
 
-              {/* AUTOMATIC YEAR DROPDOWN */}
               <div>
                 <label className={labelClass}>Year</label>
                 <select className="input-field" value={formData.year} onChange={(e) => handleChange("year", e.target.value)}>
@@ -193,7 +181,6 @@ export default function CreateVehiclePage() {
                 </select>
               </div>
 
-              {/* DYNAMIC BODY TYPE DROPDOWN */}
               <div>
                 <label className={labelClass}>Body Type</label>
                 {typeOptions.length === 0 ? (
@@ -207,11 +194,21 @@ export default function CreateVehiclePage() {
                   </select>
                 )}
               </div>
+              
+              <div>
+                 <label className={labelClass}>Condition</label>
+                 <select className="input-field" value={formData.condition} onChange={(e) => handleChange("condition", e.target.value)}>
+                    <option value="Foreign Used">Foreign Used</option>
+                    <option value="Locally Used">Locally Used</option>
+                    <option value="Brand New">Brand New</option>
+                 </select>
+              </div>
+
             </div>
           </div>
         )}
 
-        {/* STEP 2: SPECS (Unchanged logic, kept brief for clarity) */}
+        {/* STEP 2: SPECS */}
         {step === 2 && (
           <div className="space-y-8">
             <div className={sectionClass}>
@@ -244,23 +241,47 @@ export default function CreateVehiclePage() {
             <div className={sectionClass}>
               <div className="flex justify-between items-center mb-6 border-b border-gray-200/50 pb-4">
                  <h2 className="text-2xl font-extrabold text-black">Features</h2>
-                 <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-400 uppercase">Quick Add:</span>
-                    <select 
-                        className="bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        onChange={(e) => {
-                            addFromTemplate(e.target.value);
-                            e.target.value = "";
-                        }}
+                 
+                 {/* --- CUSTOM DROPDOWN FOR HEIGHT LIMIT --- */}
+                 <div className="relative">
+                    <button 
+                        type="button"
+                        onClick={() => setShowQuickAdd(!showQuickAdd)}
+                        className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold rounded-lg px-3 py-2 hover:bg-blue-100 transition-colors"
                     >
-                        <option value="">+ Select Saved Feature</option>
-                        {/* Filter out Brand/Body Type from this list since they are used in Step 1 */}
-                        {templates
-                          .filter(t => !t.label.toLowerCase().includes("brand") && !t.label.toLowerCase().includes("body"))
-                          .map(t => (
-                            <option key={t.id} value={t.id}>{t.label}</option>
-                        ))}
-                    </select>
+                        <span>+ Select Saved Feature</span>
+                        <ChevronDown size={14} className={`transition-transform ${showQuickAdd ? 'rotate-180' : ''}`}/>
+                    </button>
+                    
+                    {/* DROPDOWN MENU */}
+                    {showQuickAdd && (
+                        <>
+                            {/* Backdrop to close on click outside */}
+                            <div className="fixed inset-0 z-40" onClick={() => setShowQuickAdd(false)} />
+                            
+                            {/* Scrollable Menu */}
+                            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl z-50 max-h-60 overflow-y-auto p-2">
+                                {templates
+                                   .filter(t => !t.label.toLowerCase().includes("brand") && !t.label.toLowerCase().includes("body type"))
+                                   .map(t => (
+                                   <button 
+                                      key={t.id} 
+                                      onClick={() => {
+                                          addFromTemplate(t.id);
+                                          setShowQuickAdd(false);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors flex items-center justify-between group"
+                                   >
+                                      {t.label}
+                                      <Plus size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                   </button>
+                                ))}
+                                {templates.length === 0 && (
+                                    <div className="p-3 text-xs text-gray-400 text-center">No templates found.</div>
+                                )}
+                            </div>
+                        </>
+                    )}
                  </div>
               </div>
 

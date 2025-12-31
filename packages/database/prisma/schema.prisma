@@ -80,7 +80,7 @@ model VehicleFeature {
   value     String  // e.g., "Panoramic", "3.8s"
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   
-  @@unique([vehicleId, key]) // Prevent duplicate keys per vehicle
+  @@index([vehicleId])
 }
 
 // Finance & Logic (Super Admin Only)

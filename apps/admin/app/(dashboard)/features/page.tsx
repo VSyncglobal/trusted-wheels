@@ -1,32 +1,7 @@
 import { prisma } from "@repo/database"
-import { Plus, Trash, SlidersHorizontal, Layers, List } from "lucide-react"
-import { revalidatePath } from "next/cache"
-
-// --- SERVER ACTIONS ---
-async function addTemplate(formData: FormData) {
-  'use server'
-  const label = formData.get("label") as string
-  const rawOptions = formData.get("options") as string
-  
-  // Clean up options: split by comma, trim whitespace, remove empty strings
-  const options = rawOptions.split(",").map(s => s.trim()).filter(s => s.length > 0)
-  
-  await prisma.featureTemplate.create({
-    data: {
-      label,
-      type: "DROPDOWN",
-      options,
-      isMandatory: false
-    }
-  })
-  revalidatePath("/features")
-}
-
-async function deleteTemplate(id: string) {
-  'use server'
-  await prisma.featureTemplate.delete({ where: { id } })
-  revalidatePath("/features")
-}
+import { Plus, SlidersHorizontal, Layers } from "lucide-react"
+import { addTemplate } from "./actions"
+import { FeatureCard } from "./feature-card" 
 
 // --- PAGE COMPONENT ---
 export default async function FeaturesPage() {
@@ -44,7 +19,7 @@ export default async function FeaturesPage() {
         </div>
         <div>
           <h1 className="text-3xl font-extrabold text-black tracking-tight">System Configuration</h1>
-          <p className="text-gray-500 font-medium">Define Brands, Body Types, and Vehicle Options here.</p>
+          <p className="text-gray-500 font-medium">Manage Brands, Body Types, and Sub-Features.</p>
         </div>
       </div>
 
@@ -64,23 +39,20 @@ export default async function FeaturesPage() {
                  <input 
                    name="label" 
                    required 
-                   placeholder="e.g. Brand, Body Type, Fuel" 
+                   placeholder="e.g. Brand, Body Type, Interior" 
                    className="w-full p-4 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors font-bold text-sm" 
                  />
-                 <p className="text-[10px] text-gray-500 mt-2 leading-relaxed">
-                    Use specific names like "Brand" or "Body Type" to populate system filters.
-                 </p>
                </div>
                
                <div>
-                 <label className="block text-[10px] font-bold uppercase text-gray-400 tracking-widest mb-2">Options List</label>
+                 <label className="block text-[10px] font-bold uppercase text-gray-400 tracking-widest mb-2">Initial Options</label>
                  <textarea 
                    name="options" 
                    required 
-                   placeholder="Toyota, BMW, Mercedes, Audi..." 
+                   placeholder="Option 1, Option 2, Option 3..." 
                    className="w-full p-4 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors h-32 text-sm font-medium leading-relaxed" 
                  />
-                 <p className="text-[10px] text-gray-500 mt-2">Separate each option with a comma.</p>
+                 <p className="text-[10px] text-gray-500 mt-2">Separate by comma. You can add more later.</p>
                </div>
 
                <button type="submit" className="w-full bg-blue-600 text-white p-4 rounded-xl font-bold text-sm hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
@@ -95,35 +67,12 @@ export default async function FeaturesPage() {
            {templates.length === 0 && (
              <div className="p-12 text-center bg-white/50 border border-dashed border-gray-200 rounded-[2rem]">
                <p className="text-gray-400 font-bold">No configurations defined yet.</p>
-               <p className="text-sm text-gray-400">Add "Brand" and "Body Type" to get started.</p>
              </div>
            )}
            
            <div className="grid md:grid-cols-2 gap-6">
              {templates.map((t) => (
-               <div key={t.id} className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all group">
-                 <div className="flex justify-between items-start mb-4">
-                   <div className="flex items-center gap-3">
-                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                       <List size={16} />
-                     </div>
-                     <h4 className="font-extrabold text-black text-lg">{t.label}</h4>
-                   </div>
-                   <form action={deleteTemplate.bind(null, t.id)}>
-                     <button className="text-gray-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100">
-                       <Trash size={16} />
-                     </button>
-                   </form>
-                 </div>
-                 
-                 <div className="flex flex-wrap gap-2">
-                   {t.options.map((opt, i) => (
-                     <span key={i} className="text-xs font-bold bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg shadow-sm">
-                       {opt}
-                     </span>
-                   ))}
-                 </div>
-               </div>
+                <FeatureCard key={t.id} template={t} />
              ))}
            </div>
         </div>

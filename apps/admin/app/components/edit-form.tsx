@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from "react"
-import { Save, Loader2, Plus, Trash2, CheckCircle2, Zap } from "lucide-react"
+import { Loader2, Plus, Trash2, CheckCircle2, Zap, ChevronDown } from "lucide-react"
 import { updateVehicleDetails } from "../(dashboard)/vehicles/[id]/actions"
 
 // Reusing constants
@@ -15,6 +15,9 @@ const YEARS = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i)
 // Add templates to props
 export function EditForm({ vehicle, features, costs, templates = [] }: any) {
   const [isPending, startTransition] = useTransition()
+  
+  // UI State
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   
   // Helper to extract existing feature values
   const getFeat = (k: string) => features.find((f: any) => f.key === k)?.value || ""
@@ -58,14 +61,11 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // --- NEW LOGIC: ADD FROM TEMPLATE ---
+  // --- ADD FROM TEMPLATE ---
   const addFromTemplate = (templateId: string) => {
     if (!templateId) return;
     const template = templates.find((t: any) => t.id === templateId);
     if (template) {
-        // Prevent duplicates
-        if(customSpecs.find(s => s.key === template.label)) return;
-
         setCustomSpecs([
             ...customSpecs, 
             { 
@@ -82,11 +82,9 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
     updated[index] = { ...updated[index], [field]: val };
     setCustomSpecs(updated);
   };
-  // ------------------------------------
 
   const handleSubmit = () => {
     startTransition(async () => {
-       // Clean payload
        const cleanSpecs = customSpecs.map(({ key, value }) => ({ key, value }));
        const payload = { ...formData, customSpecs: cleanSpecs }
        
@@ -107,7 +105,7 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
     <div className="pb-24">
       <form className="space-y-8">
         
-        {/* SECTION 1: CORE IDENTITY (Unchanged) */}
+        {/* SECTION 1: CORE IDENTITY */}
         <div className={sectionClass}>
            <div className="flex justify-between items-center mb-8 border-b border-gray-200/50 pb-4">
               <h2 className="text-2xl font-extrabold text-black">Vehicle Identity</h2>
@@ -149,7 +147,7 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
            </div>
         </div>
 
-        {/* SECTION 2: TECHNICAL SPECS (Updated Features UI) */}
+        {/* SECTION 2: TECHNICAL SPECS */}
         <div className={sectionClass}>
            <h2 className="text-2xl font-extrabold text-black mb-8">Technical Specs</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -180,21 +178,44 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
               <div className="flex justify-between items-center mb-6 border-b border-blue-200/50 pb-4">
                  <h3 className="text-sm font-extrabold text-blue-600 uppercase tracking-widest">Features</h3>
                  
-                 {/* QUICK ADD DROPDOWN */}
-                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase hidden md:inline">Quick Add:</span>
-                    <select 
-                        className="bg-white border border-blue-200 text-blue-800 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm"
-                        onChange={(e) => {
-                            addFromTemplate(e.target.value);
-                            e.target.value = ""; 
-                        }}
+                 {/* QUICK ADD CUSTOM DROPDOWN */}
+                 <div className="relative">
+                    <button 
+                        type="button"
+                        onClick={() => setShowQuickAdd(!showQuickAdd)}
+                        className="flex items-center gap-2 bg-white border border-blue-200 text-blue-800 text-xs font-bold rounded-lg px-3 py-2 hover:bg-blue-50 transition-colors shadow-sm"
                     >
-                        <option value="">+ Select Saved Feature</option>
-                        {templates.map((t: any) => (
-                            <option key={t.id} value={t.id}>{t.label}</option>
-                        ))}
-                    </select>
+                        <span>+ Select Saved Feature</span>
+                        <ChevronDown size={14} className={`transition-transform ${showQuickAdd ? 'rotate-180' : ''}`}/>
+                    </button>
+                    
+                    {showQuickAdd && (
+                        <>
+                            {/* Backdrop */}
+                            <div className="fixed inset-0 z-40" onClick={() => setShowQuickAdd(false)} />
+                            
+                            {/* Menu with Scrollbar */}
+                            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl z-50 max-h-60 overflow-y-auto p-2">
+                                {templates
+                                    .filter((t: any) => !t.label.toLowerCase().includes("brand") && !t.label.toLowerCase().includes("body type"))
+                                    .map((t: any) => (
+                                    <button 
+                                      key={t.id} 
+                                      type="button"
+                                      onClick={() => {
+                                          addFromTemplate(t.id);
+                                          setShowQuickAdd(false);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors flex items-center justify-between group"
+                                    >
+                                      {t.label}
+                                      <Plus size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </button>
+                                ))}
+                                {templates.length === 0 && <div className="p-3 text-xs text-gray-400 text-center">No templates found.</div>}
+                            </div>
+                        </>
+                    )}
                  </div>
               </div>
               
@@ -208,7 +229,6 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
 
                  {customSpecs.map((spec: any, idx: number) => (
                     <div key={idx} className="flex gap-4 items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                       {/* Name */}
                        <div className="w-1/3">
                             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Name</label>
                             <input 
@@ -218,7 +238,6 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
                             />
                        </div>
                        
-                       {/* Value (Dropdown or Text) */}
                        <div className="flex-1">
                             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Value</label>
                             {spec.options && spec.options.length > 0 ? (
@@ -270,7 +289,7 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
            </div>
         </div>
 
-        {/* SECTION 3: FINANCIALS (Unchanged) */}
+        {/* SECTION 3: FINANCIALS */}
         <div className={sectionClass}>
            <h2 className="text-2xl font-extrabold text-black mb-8">Financials</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

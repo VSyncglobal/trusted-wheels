@@ -6,18 +6,6 @@ import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  // 1. FORCE A UNIQUE COOKIE NAME
-  cookies: {
-    sessionToken: {
-      name: `admin_session_token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
-  },
   providers: [
     Credentials({
       credentials: {

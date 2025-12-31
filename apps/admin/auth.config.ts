@@ -7,6 +7,18 @@ export const authConfig = {
   session: { 
     strategy: "jwt" 
   },
+  // This ensures the Middleware looks for 'admin_session_token'
+  cookies: {
+    sessionToken: {
+      name: `admin_session_token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
@@ -20,8 +32,6 @@ export const authConfig = {
       }
       return true
     },
-    
-    // 1. ADD THIS: Transfer User Info to Token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
@@ -30,8 +40,6 @@ export const authConfig = {
       }
       return token
     },
-
-    // 2. ADD THIS: Transfer Token to Session (so Middleware sees it)
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string

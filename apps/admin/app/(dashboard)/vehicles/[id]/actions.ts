@@ -1,6 +1,6 @@
 'use server'
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { prisma } from "@repo/database"
 import { revalidatePath } from "next/cache"
@@ -14,7 +14,7 @@ const s3 = new S3Client({
   },
 })
 
-// 1. Generate Presigned URL (Used by Client during "Save")
+// 1. Generate Presigned URL
 export async function getPresignedUploadUrl(filename: string, fileType: string) {
   const uniqueId = crypto.randomUUID()
   const cleanFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "")
@@ -32,44 +32,25 @@ export async function getPresignedUploadUrl(filename: string, fileType: string) 
   return { signedUrl, publicUrl, key }
 }
 
-// 2. The "Commit" Action (Runs on Save)
+// 2. Commit Gallery Changes
 export async function updateVehicleGallery(
   vehicleId: string, 
   newImages: { url: string; key: string }[], 
   deletedImageIds: string[]
 ) {
   try {
-    // A. Find the keys of images we are about to delete (to remove from S3)
-    const imagesToDelete = await prisma.vehicleImage.findMany({
-      where: { id: { in: deletedImageIds } },
-      select: { url: true } 
-    })
-
-    // B. Database Transaction: Create New + Delete Old
     await prisma.$transaction([
-      // Create new records
       prisma.vehicleImage.createMany({
         data: newImages.map(img => ({
           vehicleId,
           url: img.url,
-          // We could store 'key' in DB if we added a column, 
-          // but for now we derive it or just delete DB record.
+          order: 0 // Default order, can be updated later
         }))
       }),
-      // Delete old records
       prisma.vehicleImage.deleteMany({
         where: { id: { in: deletedImageIds } }
       })
     ])
-
-    // C. Clean up S3 Objects (Fire and forget, or await)
-    // Note: We attempt to derive key from URL or just accept DB deletion is enough 
-    // If you want strict S3 cleanup, you'd parse the Key from the URL here.
-    /* for (const img of imagesToDelete) {
-       // Extract key from URL logic would go here
-       // await s3.send(new DeleteObjectCommand({ ... }))
-    } 
-    */
 
     revalidatePath(`/vehicles/${vehicleId}`)
     return { success: true }
@@ -78,29 +59,29 @@ export async function updateVehicleGallery(
     return { success: false }
   }
 }
-// ... (Keep existing imports and S3 functions) ...
 
-// --- NEW UPDATE ACTION ---
+// 3. Update Vehicle Details (Core Logic)
 export async function updateVehicleDetails(vehicleId: string, data: any) {
   try {
-    // 1. Format Fixed Features
+    // 1. Prepare Features
+    // We filter out empty fixed values, but keep all custom specs
     const fixedFeatures = [
-      { key: "Engine Size", value: `${data.engineSizeCC} cc` },
-      { key: "Mileage", value: `${data.mileage} km` },
+      { key: "Engine Size", value: data.engineSizeCC ? `${data.engineSizeCC} cc` : "" },
+      { key: "Mileage", value: data.mileage ? `${data.mileage} km` : "" },
       { key: "Fuel Type", value: data.fuelType },
       { key: "Transmission", value: data.transmission },
-      { key: "Condition", value: data.condition || "USED" },
+      // Note: We don't force 'Condition' into features anymore, 
+      // it lives in the column, but you can keep it here for display if you want.
     ].filter(f => f.value && f.value !== "")
 
-    // 2. Combine with Custom Specs
     const allFeatures = [
         ...fixedFeatures, 
-        ...(data.customSpecs || [])
+        ...(data.customSpecs || []) // This allows duplicates (e.g. multiple "Brand" keys)
     ]
 
-    // 3. Transaction: Update Base Fields + Replace Features
+    // 2. Transaction
     await prisma.$transaction(async (tx) => {
-      // A. Update Core Fields
+      // A. Update Core Fields (Including new 'condition' column)
       await tx.vehicle.update({
         where: { id: vehicleId },
         data: {
@@ -108,16 +89,15 @@ export async function updateVehicleDetails(vehicleId: string, data: any) {
           model: data.model,
           year: parseInt(data.year),
           bodyType: data.type,
+          condition: data.condition, // <--- SAVING TO DB COLUMN
+          stockNumber: data.stockNumber, // Allow editing stock number
           listingPrice: parseFloat(data.sellingPrice || "0"),
-          status: data.status, // Allow status updates (DRAFT/PUBLISHED)
+          status: data.status,
         }
       })
 
-      // B. Update Internal Costs (Upsert or Create)
+      // B. Update Finance/Cost
       if (data.basePrice) {
-         // Simple logic: If exists, update amount. If not, create.
-         // For a real accounting system, you'd add a NEW cost line item. 
-         // Here we just maintain the "Base Purchase Cost".
          const existingCost = await tx.vehicleCost.findFirst({
             where: { vehicleId, description: "Base Purchase Cost" }
          })
@@ -139,8 +119,8 @@ export async function updateVehicleDetails(vehicleId: string, data: any) {
          }
       }
 
-      // C. Update Features (Delete All -> Re-create)
-      // This is the safest way to handle renames/deletions in a KV store
+      // C. Update Features (The "Delete All -> Re-create" Strategy)
+      // This is what enables you to edit/add multiple features with the same name.
       await tx.vehicleFeature.deleteMany({
         where: { vehicleId }
       })
