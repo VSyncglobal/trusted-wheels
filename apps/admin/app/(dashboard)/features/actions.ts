@@ -49,7 +49,8 @@ export async function removeOptionFromTemplate(templateId: string, optionToRemov
   const template = await prisma.featureTemplate.findUnique({ where: { id: templateId } })
   if (!template) return
 
-  const updatedOptions = template.options.filter(opt => opt !== optionToRemove)
+  // FIX: Explicitly type 'opt' as string to resolve "implicitly has an 'any' type" error
+  const updatedOptions = template.options.filter((opt: string) => opt !== optionToRemove)
 
   await prisma.featureTemplate.update({
     where: { id: templateId },
