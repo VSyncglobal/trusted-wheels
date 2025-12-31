@@ -19,7 +19,7 @@ export default async function VehicleEditPage({ params }: { params: Promise<{ id
           costs: true 
       }
     }),
-    prisma.featureTemplate.findMany({ orderBy: { label: 'asc' } }) // <--- FETCH TEMPLATES
+    prisma.featureTemplate.findMany({ orderBy: { label: 'asc' } }) 
   ])
 
   if (!rawVehicle) return <div>Vehicle not found</div>
@@ -28,7 +28,8 @@ export default async function VehicleEditPage({ params }: { params: Promise<{ id
   const vehicle = {
     ...rawVehicle,
     listingPrice: rawVehicle.listingPrice.toString(),
-    costs: rawVehicle.costs.map(c => ({
+    // FIX: Explicitly type 'c' as any to pass build strictness
+    costs: rawVehicle.costs.map((c: any) => ({
         ...c,
         amount: c.amount.toString()
     }))
@@ -59,7 +60,7 @@ export default async function VehicleEditPage({ params }: { params: Promise<{ id
             vehicle={vehicle} 
             features={vehicle.features} 
             costs={vehicle.costs}
-            templates={templates} // <--- PASS TEMPLATES HERE
+            templates={templates} 
         />
 
       </div>
