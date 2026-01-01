@@ -195,9 +195,7 @@ export default async function InventoryPage({
                             <h3 className="text-lg font-extrabold text-black group-hover:text-blue-600 transition-colors truncate">{car.make} {car.model}</h3>
                             
                             <div className="mt-4 flex items-center gap-3 text-xs font-medium text-gray-500 border-t border-gray-50 pt-3">
-                               {/* FIXED: Typed find callback */}
-                               <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Mileage")?.value || "N/A"}</span>
-                               <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
+                               {/* FIXED: Removed Mileage Display */}
                                <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Fuel Type")?.value || "Petrol"}</span>
                                <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"/>
                                <span className="truncate">{car.features.find((f: VehicleFeature) => f.key === "Transmission")?.value || "Auto"}</span>

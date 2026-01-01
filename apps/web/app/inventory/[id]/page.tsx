@@ -74,7 +74,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                     </div>
 
                     <div className="grid grid-cols-2 gap-6 py-8 border-y border-gray-100">
-                        <SpecItem icon={Gauge} label="Mileage" value={getFeat("Mileage")} />
+                        {/* FIXED: Removed Mileage SpecItem */}
                         <SpecItem icon={Settings2} label="Engine" value={getFeat("Engine Size")} />
                         <SpecItem icon={Fuel} label="Fuel" value={getFeat("Fuel Type")} />
                         <SpecItem icon={ShieldCheck} label="Trans." value={getFeat("Transmission")} />

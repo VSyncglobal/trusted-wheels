@@ -4,9 +4,9 @@ import { useState, useTransition } from "react"
 import { Loader2, Plus, Trash2, CheckCircle2, Zap, ChevronDown } from "lucide-react"
 import { updateVehicleDetails } from "../(dashboard)/vehicles/[id]/actions"
 
-// Reusing constants
-const BRANDS = ["Toyota", "Mercedes-Benz", "BMW", "Audi", "Land Rover", "Nissan", "Honda", "Mazda", "Volkswagen", "Porsche"]
-const TYPES = ["SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe", "Convertible", "Van"]
+// Reusing constants as fallbacks
+const DEFAULT_BRANDS = ["Toyota", "Mercedes-Benz", "BMW", "Audi", "Land Rover", "Nissan", "Honda", "Mazda", "Volkswagen", "Porsche"]
+const DEFAULT_TYPES = ["SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe", "Convertible", "Van"]
 const FUEL_TYPES = ["PETROL", "DIESEL", "HYBRID", "ELECTRIC"]
 const TRANSMISSIONS = ["AUTOMATIC", "MANUAL", "CVT"]
 const STATUSES = ["DRAFT", "PUBLISHED", "SOLD", "ARCHIVED"]
@@ -19,6 +19,15 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
   // UI State
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   
+  // --- 1. DYNAMIC OPTIONS LOGIC ---
+  // Fetch Brand Options from DB Templates or use Default
+  const brandTemplate = templates.find((t: any) => t.label.toLowerCase().includes("brand"));
+  const brandOptions = brandTemplate && brandTemplate.options.length > 0 ? brandTemplate.options : DEFAULT_BRANDS;
+
+  // Fetch Body Type Options from DB Templates or use Default
+  const typeTemplate = templates.find((t: any) => t.label.toLowerCase().includes("body") || t.label.toLowerCase().includes("type"));
+  const typeOptions = typeTemplate && typeTemplate.options.length > 0 ? typeTemplate.options : DEFAULT_TYPES;
+
   // Helper to extract existing feature values
   const getFeat = (k: string) => features.find((f: any) => f.key === k)?.value || ""
   
@@ -125,7 +134,8 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
               <div>
                 <label className={labelClass}>Brand / Make</label>
                 <select className="input-field" value={formData.brand} onChange={(e) => handleChange("brand", e.target.value)}>
-                  {BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
+                  {/* FIX: Use dynamic brandOptions */}
+                  {brandOptions.map((b: string) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div>
@@ -141,7 +151,8 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
               <div>
                 <label className={labelClass}>Body Type</label>
                 <select className="input-field" value={formData.type} onChange={(e) => handleChange("type", e.target.value)}>
-                  {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  {/* FIX: Use dynamic typeOptions */}
+                  {typeOptions.map((t: string) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
            </div>
@@ -197,6 +208,7 @@ export function EditForm({ vehicle, features, costs, templates = [] }: any) {
                             {/* Menu with Scrollbar */}
                             <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl z-50 max-h-60 overflow-y-auto p-2">
                                 {templates
+                                    // FIX: Ensure main dropdowns (Brand/Body) don't appear in custom features
                                     .filter((t: any) => !t.label.toLowerCase().includes("brand") && !t.label.toLowerCase().includes("body type"))
                                     .map((t: any) => (
                                     <button 
