@@ -7,7 +7,7 @@ interface InventoryActionsProps {
   price: number
   vehicleName: string
   stockNumber: string
-  vehicleId?: string // Added to fix build error
+  vehicleId?: string
 }
 
 export function InventoryActions({ price, vehicleName, stockNumber }: InventoryActionsProps) {
@@ -24,10 +24,60 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
     return () => { document.body.style.overflow = "auto" }
   }, [activeModal])
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleShare = async () => {
+    const shareData = {
+      title: vehicleName,
+      text: `Check out this ${vehicleName} (Stock: ${stockNumber}) on Trust Rides.`,
+      url: window.location.href,
+    }
+
+    // 1. Try Native Mobile Share (Best for Phones)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        return
+      } catch (err) {
+        console.log("Error sharing:", err)
+      }
+    }
+
+    // 2. Fallback to Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+        return
+      } catch (err) {
+        console.error("Clipboard API failed:", err)
+      }
+    }
+
+    // 3. Fallback for older browsers / non-secure contexts (e.g., local dev IP)
+    try {
+      const textArea = document.createElement("textarea")
+      textArea.value = window.location.href
+      
+      // Avoid scrolling to bottom
+      textArea.style.top = "0"
+      textArea.style.left = "0"
+      textArea.style.position = "fixed"
+
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      
+      if (successful) {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    } catch (err) {
+      console.error("Fallback copy failed:", err)
+      alert("Unable to copy link manually.")
+    }
   }
 
   return (

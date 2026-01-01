@@ -1,70 +1,75 @@
 'use client'
 
 import Link from "next/link";
-import { Car, Truck, Zap, Activity } from "lucide-react";
+import { Car, Truck, Zap, Box, Key, Bus } from "lucide-react";
 import { useState } from "react";
 
-// Fallback data
-const DEFAULT_CATEGORIES = [
-  "SUV", "Sedan", "Pickup Truck", "Crossover", "Hatchback", "Coupe"
+// UPDATED: Categories tailored exactly to your provided data rules
+const CATEGORIES = [
+  "SUV",
+  "Hatchback(tududu)",
+  "Station Wagon",
+  "Crossover",
+  "Van",
+  "Van / Minivan",
+  "Pickup / Double Cab",
+  "Truck",
+  "Sedan (Saloon)"
 ];
 
 function getIcon(name: string) {
-  if (name.includes("Truck")) return Truck;
-  if (name.includes("Electric")) return Zap;
+  const n = name.toLowerCase();
+  
+  if (n.includes("pickup") || n.includes("truck")) return Truck;
+  if (n.includes("van") || n.includes("minivan")) return Bus; // Using Bus icon for Vans/Minivans for distinction
+  if (n.includes("electric")) return Zap;
+  // Specific check for the tailored hatchback name
+  if (n.includes("hatchback")) return Box; 
+  if (n.includes("station wagon")) return Car; // Station wagons often look like long cars
+  if (n.includes("sedan") || n.includes("saloon")) return Car;
+  if (n.includes("suv") || n.includes("crossover")) return Car;
+  
   return Car;
 }
 
 export function CategoryGrid() {
-  // FIXED: Removed unused 'setCategories' to pass linting
-  const [categories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [categories] = useState<string[]>(CATEGORIES);
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-[1400px] mx-auto px-6">
+    <section className="py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+      <div className="max-w-[1400px] mx-auto px-4">
          
-         <div className="flex justify-between items-end mb-12">
-            <div>
-               <h2 className="text-4xl font-extrabold text-black tracking-tight mb-2">Browse by Type</h2>
-               <p className="text-gray-500 font-medium">Find the perfect match for your lifestyle.</p>
-            </div>
-            <Link href="/inventory" className="text-sm font-bold text-blue-600 hover:text-black transition-colors uppercase tracking-widest flex items-center gap-2">
-               View All Inventory <Activity size={16}/>
-            </Link>
-         </div>
+         {/* Flex container with horizontal scroll for mobile, centered content */}
+         <div className="flex items-center justify-between overflow-x-auto gap-2 scrollbar-hide">
+            <h2 className="text-xs font-extrabold text-black uppercase tracking-wider shrink-0 mr-4 hidden md:block">
+              Browse Type
+            </h2>
 
-         {categories.length === 0 ? (
-            <div className="p-12 text-center bg-gray-50 rounded-3xl">
-               <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto" />
-            </div>
-         ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-               {categories.slice(0, 5).map((cat) => {
+            <div className="flex gap-2 min-w-max">
+               {categories.map((cat) => {
                   const Icon = getIcon(cat);
+                  // Clean up display label if needed, or keep exactly as is. 
+                  // Keeping "Hatchback(tududu)" as requested, but maybe "Hatchback" is cleaner for UI? 
+                  // The prompt implies "hatchbacks will filter to hatchbacks(tududu)", likely meaning the link value.
+                  // For now, I will display the full name to ensure accuracy with your specific request, 
+                  // but you can change the children of the span to `cat.split('(')[0]` if you want cleaner labels.
                   return (
                      <Link 
                        key={cat} 
-                       href={`/inventory?type=${cat}`}
-                       className="group flex flex-col items-center justify-center gap-4 bg-gray-50 hover:bg-black hover:text-white p-8 rounded-[2rem] transition-all duration-300"
+                       href={`/inventory?type=${encodeURIComponent(cat)}`}
+                       className="group flex items-center gap-2 bg-gray-50 hover:bg-black hover:text-white px-3 py-2 rounded-lg transition-all duration-200 border border-transparent"
                      >
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-black group-hover:scale-110 transition-transform">
-                           <Icon size={28} strokeWidth={1.5} />
-                        </div>
-                        <span className="font-bold text-sm uppercase tracking-wider">{cat}</span>
+                        <Icon size={14} className="text-gray-400 group-hover:text-white" />
+                        <span className="font-bold text-[10px] uppercase tracking-wide">{cat}</span>
                      </Link>
                   )
                })}
-               <Link 
-                 href="/inventory"
-                 className="group flex flex-col items-center justify-center gap-4 bg-blue-50 hover:bg-blue-600 hover:text-white p-8 rounded-[2rem] transition-all duration-300"
-               >
-                  <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center text-blue-600 group-hover:bg-white group-hover:text-blue-600 transition-colors">
-                     <Activity size={28} strokeWidth={1.5} />
-                  </div>
-                  <span className="font-bold text-sm uppercase tracking-wider">View All</span>
-               </Link>
             </div>
-         )}
+            
+             <Link href="/inventory" className="text-[10px] font-bold text-blue-600 hover:text-black uppercase shrink-0 ml-4 hidden md:block">
+               View All
+            </Link>
+         </div>
 
       </div>
     </section>

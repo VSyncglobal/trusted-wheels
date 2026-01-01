@@ -66,12 +66,12 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} font-sans bg-off-white min-h-screen flex flex-col`}>
         <Header />
-        {/* Main content has padding-top to account for the fixed header visual space */}
-        <main className="flex-1 pt-32 px-6 pb-20 max-w-[1400px] mx-auto w-full">
+        {/* UPDATED: Removed pt-32, px-6, max-w constraints. Main is now a full-width flex container. */}
+        <main className="flex-1 w-full">
           {children}
         </main>
         
-        <footer className="py-12 text-center text-xs text-gray-400 uppercase tracking-widest border-t border-gray-200 mx-6">
+        <footer className="py-8 text-center text-[10px] text-gray-400 uppercase tracking-widest border-t border-gray-200 mt-12">
           © {new Date().getFullYear()} Trust Rides. Nairobi, Kenya.
         </footer>
       </body>

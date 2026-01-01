@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react"
 
-// FIX: Define explicit interface instead of 'any'
 interface VehicleImage {
   id: string
   url: string
@@ -13,9 +12,12 @@ interface VehicleImage {
 export function VehicleGallery({ images }: { images: VehicleImage[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-
-  // ... (rest of the component logic remains the same, just typing changed)
   
+  // SWIPE STATE
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const minSwipeDistance = 50
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isModalOpen) return
     if (e.key === "Escape") setIsModalOpen(false)
@@ -28,6 +30,32 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [handleKeyDown])
 
+  // Swipe Logic
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      // Next Image
+      setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+    }
+    if (isRightSwipe) {
+      // Previous Image
+      setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+    }
+  }
+
   if (!images || images.length === 0) {
     return (
       <div className="aspect-[4/3] flex items-center justify-center bg-gray-100 rounded-[2rem] text-gray-400 font-bold uppercase tracking-widest">
@@ -36,10 +64,10 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
     )
   }
 
-  // ... (Render code is identical to previous step, just ensured type safety)
   return (
     <>
       <div className="flex flex-col gap-4">
+        {/* Main Image */}
         <div 
           className="relative aspect-[16/10] w-full overflow-hidden rounded-[2.5rem] bg-gray-100 border border-gray-200 shadow-sm group cursor-zoom-in"
           onClick={() => setIsModalOpen(true)}
@@ -62,6 +90,7 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
           </div>
         </div>
 
+        {/* Thumbnails */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-1">
           {images.map((img, idx) => (
             <button
@@ -79,15 +108,34 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
         </div>
       </div>
 
+      {/* Modal - Expanded View */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200"
+          // Add Swipe Listeners here
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+           {/* Close Button */}
            <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 z-[70] p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"><X size={24} /></button>
+           
+           {/* Desktop Arrows */}
            <button onClick={(e) => { e.stopPropagation(); setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)); }} className="absolute left-6 z-[70] p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors hidden md:block"><ChevronLeft size={32} /></button>
            <button onClick={(e) => { e.stopPropagation(); setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)); }} className="absolute right-6 z-[70] p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors hidden md:block"><ChevronRight size={32} /></button>
-           <div className="relative w-full h-full max-w-7xl max-h-[85vh] flex items-center justify-center">
+           
+           {/* Image Container */}
+           <div className="relative w-full h-full max-w-7xl max-h-[85vh] flex items-center justify-center pointer-events-none">
               <Image src={images[selectedIndex].url} alt="Expanded View" fill className="object-contain" quality={100} priority />
            </div>
+           
+           {/* Counter */}
            <div className="absolute top-6 left-6 text-white/50 font-mono text-sm">{selectedIndex + 1} / {images.length}</div>
+           
+           {/* Mobile Swipe Hint */}
+           <div className="absolute bottom-10 left-0 right-0 text-center text-white/30 text-xs uppercase tracking-widest md:hidden animate-pulse">
+             Swipe left/right
+           </div>
         </div>
       )}
     </>

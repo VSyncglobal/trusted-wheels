@@ -14,7 +14,6 @@ interface Feature {
   value: string
 }
 
-// 1. AI & SOCIAL METADATA (Open Graph)
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const car = await prisma.vehicle.findUnique({
@@ -25,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!car) return { title: "Vehicle Not Found" };
 
   const title = `${car.year} ${car.make} ${car.model} | Trust Rides Kenya`;
-  const description = `Buy this ${car.condition || 'Foreign Used'} ${car.year} ${car.make} ${car.model} in Nairobi. Price: KES ${Number(car.listingPrice).toLocaleString()}. Verified history.`;
+  const description = `Buy this ${car.condition || 'Foreign Used'} ${car.year} ${car.make} ${car.model}. Price: KES ${Number(car.listingPrice).toLocaleString()}.`;
 
   return { 
     title,
@@ -58,8 +57,6 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition"];
   const customFeatures = vehicle.features.filter((f: Feature) => !coreKeys.includes(f.key));
 
-  // --- 2. AI STRUCTURED DATA (The Secret Sauce) ---
-  // We keep mileage here for Google/AI to know the car's value, even if hidden from UI
   const mileage = getFeat("Mileage").replace(/\D/g, "") || "0";
   
   const jsonLd = {
@@ -68,20 +65,13 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
     image: vehicle.images.map(img => img.url),
     description: `For sale in Nairobi: ${vehicle.year} ${vehicle.make} ${vehicle.model}. ${vehicle.condition || 'Foreign Used'}.`,
-    brand: {
-      '@type': 'Brand',
-      name: vehicle.make,
-    },
+    brand: { '@type': 'Brand', name: vehicle.make },
     model: vehicle.model,
     vehicleConfiguration: `${vehicle.bodyType} - ${getFeat("Engine Size")}`,
     productionDate: vehicle.year,
     fuelType: getFeat("Fuel Type"),
     vehicleTransmission: getFeat("Transmission"),
-    mileageFromOdometer: {
-        '@type': 'QuantitativeValue',
-        value: mileage,
-        unitCode: 'KMT' // Code for Kilometers
-    },
+    mileageFromOdometer: { '@type': 'QuantitativeValue', value: mileage, unitCode: 'KMT' },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'KES',
@@ -89,48 +79,39 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
       itemCondition: 'https://schema.org/UsedCondition', 
       availability: 'https://schema.org/InStock',
       areaServed: 'Kenya',
-      seller: {
-        '@type': 'AutoDealer',
-        name: 'Trust Rides Kenya'
-      }
+      seller: { '@type': 'AutoDealer', name: 'Trust Rides Kenya' }
     }
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Inject Data for AI Bots */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div className="fixed top-6 left-6 z-40 hidden xl:block">
-        <Link href="/inventory" className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full border border-gray-200 text-xs font-bold uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all shadow-sm">
-            <ArrowLeft size={14} /> Back
+      <div className="fixed top-28 left-4 z-40 hidden xl:block">
+        <Link href="/inventory" className="flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-gray-200 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all shadow-sm">
+            <ArrowLeft size={12} /> Back
         </Link>
       </div>
 
-      <div className="max-w-[1600px] mx-auto p-6 lg:p-12 pt-24 lg:pt-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="max-w-[1400px] mx-auto p-3 pt-24 lg:p-4 lg:pt-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-full">
             <div className="lg:col-span-7 xl:col-span-8">
                <VehicleGallery images={vehicle.images} />
             </div>
 
             <div className="lg:col-span-5 xl:col-span-4">
-                <div className="sticky top-12 space-y-10">
+                <div className="sticky top-20 space-y-3">
                     <div>
-                        <div className="flex items-center gap-3 mb-4">
-                             <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest">{vehicle.bodyType}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                             <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest">{vehicle.bodyType}</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight mb-4 leading-[1.1]">
-                            {vehicle.year} {vehicle.make} <br/>
-                            <span className="text-gray-500">{vehicle.model}</span>
+                        <h1 className="text-xl md:text-2xl font-extrabold text-black tracking-tight mb-1 leading-tight">
+                            {vehicle.year} {vehicle.make} <span className="text-gray-500">{vehicle.model}</span>
                         </h1>
-                        <p className="text-3xl font-bold text-blue-600">KES {Number(vehicle.listingPrice).toLocaleString()}</p>
+                        <p className="text-lg font-bold text-blue-600">KES {Number(vehicle.listingPrice).toLocaleString()}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 py-8 border-y border-gray-100">
-                        {/* Note: Mileage SpecItem is REMOVED from UI as requested */}
+                    <div className="grid grid-cols-3 gap-2 py-2 border-y border-gray-100">
                         <SpecItem icon={Settings2} label="Engine" value={getFeat("Engine Size")} />
                         <SpecItem icon={Fuel} label="Fuel" value={getFeat("Fuel Type")} />
                         <SpecItem icon={ShieldCheck} label="Trans." value={getFeat("Transmission")} />
@@ -138,11 +119,11 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
                     {customFeatures.length > 0 && (
                         <div>
-                            <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">Additional Features</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {customFeatures.map((feat: Feature) => (
-                                    <span key={feat.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold text-gray-700">
-                                        <Check size={12} className="text-green-600" />
+                            <h3 className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Features</h3>
+                            <div className="flex flex-wrap gap-1">
+                                {customFeatures.slice(0, 10).map((feat: Feature) => (
+                                    <span key={feat.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-[9px] font-bold text-gray-700">
+                                        <Check size={8} className="text-green-600" />
                                         {feat.key}: {feat.value}
                                     </span>
                                 ))}
@@ -150,14 +131,14 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                         </div>
                     )}
 
-                    <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <InventoryActions 
                             price={Number(vehicle.listingPrice)} 
                             vehicleId={vehicle.id}
                             vehicleName={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                             stockNumber={vehicle.stockNumber}
                         />
-                        <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-wider font-bold">Verified by Trust Rides • {vehicle.status}</p>
+                        <p className="text-center text-[8px] text-gray-400 mt-2 uppercase tracking-wider font-bold">Verified by Trust Rides • {vehicle.status}</p>
                     </div>
                 </div>
             </div>
@@ -169,11 +150,11 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
 function SpecItem({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
     return (
-        <div>
-            <span className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase mb-1">
-                <Icon size={14} /> {label}
+        <div className="flex flex-col">
+            <span className="flex items-center gap-1 text-[8px] font-extrabold text-gray-400 uppercase mb-0.5">
+                <Icon size={10} /> {label}
             </span>
-            <span className="text-lg font-bold text-black">{value}</span>
+            <span className="text-xs font-bold text-black truncate">{value}</span>
         </div>
     )
 }
