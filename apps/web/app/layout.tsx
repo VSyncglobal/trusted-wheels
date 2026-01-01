@@ -6,8 +6,55 @@ import { Header } from "./components/header";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Trust Rides | Premium Auto Dealership",
-  description: "Curated selection of premium vehicles.",
+  metadataBase: new URL('https://trustrides.co.ke'), // Replace with your actual live domain
+  title: {
+    default: "Trust Rides | Premium Cars for Sale in Kenya",
+    template: "%s | Trust Rides Kenya",
+  },
+  description: "Discover reliable foreign used and locally used cars for sale in Nairobi. We stock high-quality Toyota, Mercedes, BMW, and Land Rovers with verified history.",
+  keywords: [
+    "Cars for sale Kenya", 
+    "Car dealers Nairobi", 
+    "Buy cars Kenya", 
+    "Import cars Kenya", 
+    "Toyota Prado Kenya", 
+    "Mercedes Benz Kenya", 
+    "Luxury cars Nairobi",
+    "Trust Rides",
+    "Used cars Kenya"
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_KE",
+    url: "https://trustrides.co.ke",
+    siteName: "Trust Rides Kenya",
+    title: "Trust Rides | Premium Cars for Sale in Kenya",
+    description: "Find your dream car in Nairobi. Verified imports, transparent pricing, and trusted service.",
+    images: [
+      {
+        url: "/og-image.jpg", // Ensure you add an image at public/og-image.jpg
+        width: 1200,
+        height: 630,
+        alt: "Trust Rides Premium Inventory",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Trust Rides Kenya",
+    description: "Premium cars for sale in Nairobi. Verified history and transparent pricing.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

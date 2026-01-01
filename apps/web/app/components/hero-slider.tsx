@@ -17,7 +17,7 @@ const SLIDES = [
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1560250056-07ba64664864?auto=format&fit=crop&q=80&w=1920",
+    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1200",
     title: "Flexible Financing.",
     subtitle: "Drive now, pay later. Tailored plans for your budget.",
     link: "/financing",
