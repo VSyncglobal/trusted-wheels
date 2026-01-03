@@ -7,7 +7,7 @@ import { useState } from "react";
 // UPDATED: Categories tailored exactly to your provided data rules
 const CATEGORIES = [
   "SUV",
-  "Hatchback(tududu)",
+  "Hatchback(kadudu)",
   "Station Wagon",
   "Crossover",
   "Van",

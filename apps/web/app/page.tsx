@@ -43,7 +43,8 @@ export default async function Page() {
     getOtherVehicles()
   ]);
 
-  const jsonLd = {
+  // --- 1. CORE ORGANIZATION SCHEMA ---
+  const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
     name: 'Trust Rides Kenya',
@@ -58,11 +59,48 @@ export default async function Page() {
     }
   };
 
+  // --- 2. FAQ SCHEMA (CRITICAL FOR SEO VISIBILITY) ---
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Do you offer car financing in Kenya?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, Trust Rides offers flexible car financing options and bank financing arrangements for both employed and self-employed individuals in Kenya.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Are your cars locally used or foreign used?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'We stock a mix of high-quality Foreign Used (Imports) mostly from Japan/UK and verified Locally Used vehicles.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I import a specific car through Trust Rides?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, we offer a dedicated import service. Tell us the engine CC, make, and model you want, and we will handle the purchase, shipping, and clearance.'
+        }
+      }
+    ]
+  };
+
   return (
     <div className="flex flex-col gap-0">
+      {/* Inject Schemas */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       
       <HeroSlider />
@@ -75,7 +113,6 @@ export default async function Page() {
            <Link href="/inventory" className="text-[10px] font-bold uppercase text-gray-400 hover:text-black">View All</Link>
         </div>
         
-        {/* UPDATED: min-w set to allow ~3 items on mobile (approx 30-33% width each) */}
         <div className="flex gap-2 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide px-2">
           {vehicles.length === 0 ? (
             <div className="w-full py-8 bg-gray-50 border border-dashed border-gray-200 text-center rounded-lg">
@@ -113,7 +150,6 @@ export default async function Page() {
            <div className="max-w-[1600px] mx-auto">
               <h2 className="text-sm md:text-lg font-extrabold text-black tracking-tight mb-4 text-center">Explore More</h2>
               
-              {/* UPDATED: grid-cols-3 on mobile to fit "3 across" requirement */}
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
                  {(otherVehicles as unknown as VehicleSummary[]).map((car) => (
                     <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white rounded-lg p-2 shadow-sm hover:shadow-lg transition-all duration-300">
@@ -141,22 +177,35 @@ export default async function Page() {
         </section>
       )}
 
-      {/* Value Props */}
-      <section className="grid grid-cols-3 gap-2 py-8 border-t border-black/5 px-4 max-w-[1600px] mx-auto w-full bg-white text-center md:text-left">
-         <div className="space-y-1">
-          <h3 className="text-[10px] font-bold text-black">Verified History</h3>
-          <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">Every vehicle undergoes a rigorous background check.</p>
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-[10px] font-bold text-black">Transparent Pricing</h3>
-          <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">No hidden fees or markups.</p>
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-[10px] font-bold text-black">Paperwork Handled</h3>
-          <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">We manage the transfer process.</p>
-        </div>
+      {/* Value Props & SEO Content Block */}
+      <section className="py-8 border-t border-black/5 px-4 max-w-[1600px] mx-auto w-full bg-white">
+         <div className="grid grid-cols-3 gap-2 text-center md:text-left mb-8">
+            <div className="space-y-1">
+              <h3 className="text-[10px] font-bold text-black">Verified History</h3>
+              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">Every vehicle undergoes a rigorous background check.</p>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-[10px] font-bold text-black">Transparent Pricing</h3>
+              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">No hidden fees or markups.</p>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-[10px] font-bold text-black">Paperwork Handled</h3>
+              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">We manage the transfer process.</p>
+            </div>
+         </div>
+         
+         {/* SEO CONTENT FOOTER: Helps keyword density */}
+         <div className="border-t border-dashed border-gray-200 pt-6">
+            <h4 className="text-[10px] font-bold text-gray-900 mb-2">Popular Cars for Sale in Kenya</h4>
+            <p className="text-[9px] text-gray-500 leading-relaxed">
+              Trust Rides is your premier destination for finding the best <strong>1500cc cars for sale</strong>, 
+              <strong>hybrid SUVs</strong>, and reliable <strong>Toyota cars in Nairobi</strong>. 
+              Whether you are looking for a fuel-efficient Mazda Demio, a robust Toyota Prado, or a 
+              luxury Mercedes Benz, our inventory is verified for quality. We simplify the car buying process 
+              with transparent pricing and handled paperwork.
+            </p>
+         </div>
       </section>
-
     </div>
   );
 }

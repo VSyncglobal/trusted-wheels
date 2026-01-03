@@ -110,13 +110,10 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
       {/* 2. THE MODAL OVERLAY */}
       {activeModal !== "NONE" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" 
             onClick={() => setActiveModal("NONE")}
           />
-
-          {/* Modal Content */}
           <div className="relative w-full max-w-md bg-white shadow-2xl rounded-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setActiveModal("NONE")}
@@ -124,16 +121,8 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
             >
               <X size={20} />
             </button>
-
-            {/* A. FINANCE CALCULATOR */}
-            {activeModal === "FINANCE" && (
-              <FinanceCalculator price={price} />
-            )}
-
-            {/* B. INQUIRY FORM */}
-            {activeModal === "INQUIRY" && (
-              <InquiryForm vehicleName={vehicleName} stockNumber={stockNumber} />
-            )}
+            {activeModal === "FINANCE" && <FinanceCalculator price={price} />}
+            {activeModal === "INQUIRY" && <InquiryForm vehicleName={vehicleName} stockNumber={stockNumber} />}
           </div>
         </div>
       )}
@@ -141,13 +130,11 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
   )
 }
 
-// --- SUB-COMPONENT: FINANCE CALCULATOR ---
 function FinanceCalculator({ price }: { price: number }) {
-  const [deposit, setDeposit] = useState(price * 0.2) // 20% default
-  const [months, setMonths] = useState(48) // 4 years
-  const [rate, setRate] = useState(13) // 13% interest
+  const [deposit, setDeposit] = useState(price * 0.2)
+  const [months, setMonths] = useState(48)
+  const [rate, setRate] = useState(13)
 
-  // Simple PMT Formula
   const calculateMonthly = () => {
     const principal = price - deposit
     const monthlyRate = rate / 100 / 12
@@ -161,7 +148,6 @@ function FinanceCalculator({ price }: { price: number }) {
     <div className="p-8">
       <h3 className="text-xl font-bold text-black mb-1">Finance Calculator</h3>
       <p className="text-xs text-gray-500 mb-6">Estimate your monthly repayments.</p>
-
       <div className="space-y-6">
         <div>
            <div className="flex justify-between text-xs font-bold uppercase text-gray-400 mb-2">
@@ -170,59 +156,32 @@ function FinanceCalculator({ price }: { price: number }) {
            </div>
            <div className="h-1 bg-gray-100 rounded-full w-full" />
         </div>
-
         <div>
            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Deposit (KES)</label>
-           <input 
-             type="number" 
-             value={deposit}
-             onChange={(e) => setDeposit(Number(e.target.value))}
-             className="w-full p-3 border border-gray-200 rounded-sm font-medium focus:border-black outline-none transition-colors"
-           />
-           <input 
-             type="range" min="0" max={price} step="10000"
-             value={deposit} onChange={(e) => setDeposit(Number(e.target.value))}
-             className="w-full mt-3 accent-black h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-           />
+           <input type="number" value={deposit} onChange={(e) => setDeposit(Number(e.target.value))} className="w-full p-3 border border-gray-200 rounded-sm font-medium focus:border-black outline-none transition-colors" />
+           <input type="range" min="0" max={price} step="10000" value={deposit} onChange={(e) => setDeposit(Number(e.target.value))} className="w-full mt-3 accent-black h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
         </div>
-
         <div className="grid grid-cols-2 gap-4">
            <div>
               <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Duration (Months)</label>
-              <select 
-                value={months} 
-                onChange={(e) => setMonths(Number(e.target.value))}
-                className="w-full p-3 border border-gray-200 rounded-sm bg-white font-medium focus:border-black outline-none"
-              >
+              <select value={months} onChange={(e) => setMonths(Number(e.target.value))} className="w-full p-3 border border-gray-200 rounded-sm bg-white font-medium focus:border-black outline-none">
                 {[12, 24, 36, 48, 60].map(m => <option key={m} value={m}>{m} Months</option>)}
               </select>
            </div>
            <div>
               <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Interest Rate (%)</label>
-              <input 
-                type="number" 
-                value={rate}
-                onChange={(e) => setRate(Number(e.target.value))}
-                className="w-full p-3 border border-gray-200 rounded-sm font-medium focus:border-black outline-none"
-              />
+              <input type="number" value={rate} onChange={(e) => setRate(Number(e.target.value))} className="w-full p-3 border border-gray-200 rounded-sm font-medium focus:border-black outline-none" />
            </div>
         </div>
-
         <div className="bg-gray-50 p-6 rounded-sm border border-gray-100 text-center">
            <p className="text-xs font-bold uppercase text-gray-400 mb-1">Estimated Monthly Payment</p>
-           <p className="text-3xl font-bold text-black">
-             KES {Math.round(monthlyPayment).toLocaleString()}
-           </p>
-           <p className="text-[10px] text-gray-400 mt-2">
-             *Estimates only. Subject to bank approval.
-           </p>
+           <p className="text-3xl font-bold text-black">KES {Math.round(monthlyPayment).toLocaleString()}</p>
         </div>
       </div>
     </div>
   )
 }
 
-// --- SUB-COMPONENT: INQUIRY FORM ---
 function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockNumber: string }) {
   const sendWhatsApp = () => {
     const PHONE_NUMBER = "254705124564" 
@@ -235,26 +194,15 @@ function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockN
     <div className="p-8">
        <h3 className="text-xl font-bold text-black mb-1">Make an Inquiry</h3>
        <p className="text-xs text-gray-500 mb-8">Speak directly to our sales team.</p>
-       
        <div className="space-y-4">
-          <button 
-            onClick={sendWhatsApp}
-            className="w-full bg-[#25D366] text-white h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-[#20bd5a] transition-colors shadow-sm"
-          >
+          <button onClick={sendWhatsApp} className="w-full bg-[#25D366] text-white h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-[#20bd5a] transition-colors shadow-sm">
             <MessageCircle className="fill-white" /> Continue to WhatsApp
           </button>
-          
           <div className="relative py-4">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
             <div className="relative flex justify-center text-xs uppercase bg-white px-2 text-gray-400">Or Call Us</div>
           </div>
-
-          <a 
-            href="tel:+254705124564"
-            className="w-full border border-gray-200 text-black h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
-          >
-            +254 705 124 564
-          </a>
+          <a href="tel:+254705124564" className="w-full border border-gray-200 text-black h-14 rounded-sm font-bold flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors">+254 705 124 564</a>
        </div>
     </div>
   )
