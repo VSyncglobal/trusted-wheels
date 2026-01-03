@@ -22,7 +22,7 @@ export const BLOG_POSTS: BlogPost[] = [
     category: "Buying Guide",
     relatedLink: {
       text: "View Our Fuel Efficient Inventory",
-      url: "/inventory?q=1500cc"
+      url: "/inventory"
     },
     content: `
       <p>Let's face it: visiting the petrol station in Nairobi these days can be a stressful experience. With fuel prices constantly shifting due to global markets and EPRA reviews, owning a fuel-guzzler is becoming a luxury many want to avoid. Whether you are stuck in the notorious rush hour on Mombasa Road or commuting daily from Thika, fuel efficiency is likely your number one priority.</p>
