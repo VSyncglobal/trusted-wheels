@@ -3,6 +3,7 @@ import { CategoryGrid } from "./components/category-grid";
 import { prisma } from "@repo/database";
 import Link from "next/link";
 import Image from "next/image";
+import { ShieldCheck, Banknote, Globe } from "lucide-react"; 
 
 export const dynamic = "force-dynamic";
 
@@ -43,13 +44,14 @@ export default async function Page() {
     getOtherVehicles()
   ]);
 
-  // --- 1. CORE ORGANIZATION SCHEMA ---
+  // --- 1. CORE ORGANIZATION SCHEMA (Updated Description) ---
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
     name: 'Trust Rides Kenya',
     url: 'https://trustrides.co.ke',
-    description: 'Trusted dealership for foreign used and locally used cars in Nairobi.',
+    // UPDATED: Matches your Google Business Profile for better consistency
+    description: 'Nairobi\'s premier dealership for verified foreign used and locally used vehicles. We specialize in Toyota, Subaru, and Mercedes-Benz with flexible asset financing options.',
     areaServed: 'Kenya',
     priceRange: '$$$',
     address: {
@@ -59,7 +61,6 @@ export default async function Page() {
     }
   };
 
-  // --- 2. FAQ SCHEMA (CRITICAL FOR SEO VISIBILITY) ---
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -79,21 +80,12 @@ export default async function Page() {
           '@type': 'Answer',
           text: 'We stock a mix of high-quality Foreign Used (Imports) mostly from Japan/UK and verified Locally Used vehicles.'
         }
-      },
-      {
-        '@type': 'Question',
-        name: 'Can I import a specific car through Trust Rides?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes, we offer a dedicated import service. Tell us the engine CC, make, and model you want, and we will handle the purchase, shipping, and clearance.'
-        }
       }
     ]
   };
 
   return (
     <div className="flex flex-col gap-0">
-      {/* Inject Schemas */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
@@ -119,11 +111,14 @@ export default async function Page() {
               <p className="text-gray-400 italic text-[10px]">No inventory currently published.</p>
             </div>
           ) : (
-            (vehicles as unknown as VehicleSummary[]).map((car) => (
+            (vehicles as unknown as VehicleSummary[]).map((car) => {
+              // UPDATED: Dynamic Alt Text for SEO
+              const altText = `Used ${car.year} ${car.make} ${car.model} in Nairobi`;
+              return (
               <Link key={car.id} href={`/inventory/${car.id}`} className="group relative min-w-[32%] md:min-w-[160px] lg:min-w-[200px] snap-center block">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-gray-100 mb-1.5">
                   {car.images[0] ? (
-                    <Image src={car.images[0].url} alt={car.model} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <Image src={car.images[0].url} alt={altText} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
                   ) : (
                      <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-[8px]">NO IMAGE</div>
                   )}
@@ -139,7 +134,7 @@ export default async function Page() {
                   <p className="text-[9px] text-gray-500 mt-0.5 truncate">{car.bodyType}</p>
                 </div>
               </Link>
-            ))
+            )})
           )}
         </div>
       </section>
@@ -151,11 +146,13 @@ export default async function Page() {
               <h2 className="text-sm md:text-lg font-extrabold text-black tracking-tight mb-4 text-center">Explore More</h2>
               
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
-                 {(otherVehicles as unknown as VehicleSummary[]).map((car) => (
+                 {(otherVehicles as unknown as VehicleSummary[]).map((car) => {
+                    const altText = `Used ${car.year} ${car.make} ${car.model} ${car.bodyType}`;
+                    return (
                     <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white rounded-lg p-2 shadow-sm hover:shadow-lg transition-all duration-300">
                        <div className="relative aspect-[4/3] rounded-md overflow-hidden bg-gray-100 mb-1.5">
                           {car.images[0] ? (
-                             <Image src={car.images[0].url} alt={car.model} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                             <Image src={car.images[0].url} alt={altText} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                           ) : (
                              <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-[8px] font-bold">NO IMAGE</div>
                           )}
@@ -166,7 +163,7 @@ export default async function Page() {
                        <h3 className="font-bold text-black text-[9px] md:text-[10px] truncate">{car.make} {car.model}</h3>
                        <p className="text-[9px] text-gray-500 font-medium mt-0.5 truncate">KES {Number(car.listingPrice).toLocaleString()}</p>
                     </Link>
-                 ))}
+                 )})}
               </div>
               <div className="text-center mt-6">
                  <Link href="/inventory" className="inline-block px-6 py-2 bg-black text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all shadow-lg">
@@ -177,33 +174,50 @@ export default async function Page() {
         </section>
       )}
 
-      {/* Value Props & SEO Content Block */}
-      <section className="py-8 border-t border-black/5 px-4 max-w-[1600px] mx-auto w-full bg-white">
-         <div className="grid grid-cols-3 gap-2 text-center md:text-left mb-8">
-            <div className="space-y-1">
-              <h3 className="text-[10px] font-bold text-black">Verified History</h3>
-              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">Every vehicle undergoes a rigorous background check.</p>
+      {/* SEO STORY TELLING SECTION */}
+      <section className="py-16 bg-white border-t border-gray-100">
+         <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
+            <div>
+               <h2 className="text-2xl md:text-3xl font-extrabold text-black tracking-tight mb-4">Driving Kenya Forward.</h2>
+               <p className="text-sm text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                  At <strong>Trust Rides</strong>, we bridge the gap between quality and affordability. 
+                  Whether you are upgrading to a verified <strong>Toyota Prado</strong> for upcountry adventures 
+                  or seeking a fuel-efficient <strong>1500cc Mazda Demio</strong> for your daily Nairobi commute, 
+                  our inventory is curated for the Kenyan road.
+               </p>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-[10px] font-bold text-black">Transparent Pricing</h3>
-              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">No hidden fees or markups.</p>
+
+            <div className="grid md:grid-cols-3 gap-8 pt-4">
+               <div className="space-y-2">
+                  <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-black mb-2">
+                     <Globe size={20} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-sm font-bold text-black">Direct Imports</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                     Sourcing high-grade <strong>foreign used cars</strong> directly from Japan and the UK, ensuring authentic mileage and clean history.
+                  </p>
+               </div>
+               
+               <div className="space-y-2">
+                  <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-black mb-2">
+                     <Banknote size={20} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-sm font-bold text-black">Flexible Financing</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                     We partner with major Kenyan banks to offer <strong>asset financing</strong> and flexible payment plans for employed and self-employed clients.
+                  </p>
+               </div>
+
+               <div className="space-y-2">
+                  <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-black mb-2">
+                     <ShieldCheck size={20} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-sm font-bold text-black">Buy & Drive</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                     From <strong>NTSA transfer</strong> to insurance valuation, we handle the paperwork so you can drive away in your dream car today.
+                  </p>
+               </div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-[10px] font-bold text-black">Paperwork Handled</h3>
-              <p className="text-[8px] text-gray-500 leading-relaxed hidden md:block">We manage the transfer process.</p>
-            </div>
-         </div>
-         
-         {/* SEO CONTENT FOOTER: Helps keyword density */}
-         <div className="border-t border-dashed border-gray-200 pt-6">
-            <h4 className="text-[10px] font-bold text-gray-900 mb-2">Popular Cars for Sale in Kenya</h4>
-            <p className="text-[9px] text-gray-500 leading-relaxed">
-              Trust Rides is your premier destination for finding the best <strong>1500cc cars for sale</strong>, 
-              <strong>hybrid SUVs</strong>, and reliable <strong>Toyota cars in Nairobi</strong>. 
-              Whether you are looking for a fuel-efficient Mazda Demio, a robust Toyota Prado, or a 
-              luxury Mercedes Benz, our inventory is verified for quality. We simplify the car buying process 
-              with transparent pricing and handled paperwork.
-            </p>
          </div>
       </section>
     </div>

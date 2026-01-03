@@ -9,7 +9,12 @@ interface VehicleImage {
   url: string
 }
 
-export function VehicleGallery({ images }: { images: VehicleImage[] }) {
+interface VehicleGalleryProps {
+  images: VehicleImage[];
+  altTextBase?: string; // New prop for SEO text
+}
+
+export function VehicleGallery({ images, altTextBase = "Vehicle Image" }: VehicleGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
@@ -74,7 +79,7 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
         >
           <Image
             src={images[selectedIndex].url}
-            alt="Vehicle Main View"
+            alt={`${altTextBase} - View ${selectedIndex + 1}`}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
             priority
@@ -102,7 +107,12 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
                   : 'border-transparent opacity-70 hover:opacity-100 hover:border-gray-300'
               }`}
             >
-              <Image src={img.url} alt={`View ${idx + 1}`} fill className="object-cover" />
+              <Image 
+                src={img.url} 
+                alt={`${altTextBase} - Thumbnail ${idx + 1}`} 
+                fill 
+                className="object-cover" 
+              />
             </button>
           ))}
         </div>
@@ -126,7 +136,14 @@ export function VehicleGallery({ images }: { images: VehicleImage[] }) {
            
            {/* Image Container */}
            <div className="relative w-full h-full max-w-7xl max-h-[85vh] flex items-center justify-center pointer-events-none">
-              <Image src={images[selectedIndex].url} alt="Expanded View" fill className="object-contain" quality={100} priority />
+              <Image 
+                src={images[selectedIndex].url} 
+                alt={`${altTextBase} - Fullscreen View`} 
+                fill 
+                className="object-contain" 
+                quality={100} 
+                priority 
+              />
            </div>
            
            {/* Counter */}

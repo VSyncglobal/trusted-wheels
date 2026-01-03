@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!car) return { title: "Vehicle Not Found" };
 
   const title = `${car.year} ${car.make} ${car.model} | Trust Rides Kenya`;
-  const description = `Buy this ${car.condition || 'Foreign Used'} ${car.year} ${car.make} ${car.model}. Price: KES ${Number(car.listingPrice).toLocaleString()}.`;
+  const description = `Buy this ${car.condition || 'Foreign Used'} ${car.year} ${car.make} ${car.model} in Nairobi. Price: KES ${Number(car.listingPrice).toLocaleString()}. Verified history.`;
 
   return { 
     title,
@@ -59,6 +59,9 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   const mileage = getFeat("Mileage").replace(/\D/g, "") || "0";
   
+  // SEO OPTIMIZED ALT TEXT
+  const seoAltText = `Used ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.bodyType} for sale in Nairobi Kenya - Trust Rides`;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Vehicle', 
@@ -96,7 +99,8 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
       <div className="max-w-[1400px] mx-auto p-3 pt-24 lg:p-4 lg:pt-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-full">
             <div className="lg:col-span-7 xl:col-span-8">
-               <VehicleGallery images={vehicle.images} />
+               {/* Pass the rich alt text to the gallery */}
+               <VehicleGallery images={vehicle.images} altTextBase={seoAltText} />
             </div>
 
             <div className="lg:col-span-5 xl:col-span-4">
