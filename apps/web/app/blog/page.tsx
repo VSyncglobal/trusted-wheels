@@ -1,23 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { BLOG_POSTS } from "../../lib/blog-data";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Car Buying Guide & Reviews Kenya | Trust Rides Blog",
-  description: "Expert advice on fuel efficient cars, car maintenance, and importing vehicles in Kenya.",
+  description: "Expert advice on fuel efficient cars, car maintenance, and importing vehicles in Kenya. Read our latest guides.",
 };
 
 export default function BlogIndex() {
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-32 pb-12">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-extrabold text-black mb-4 tracking-tight">
             The Driver's Seat
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm">
-            Insights, reviews, and guides for the Kenyan motorist. From maintenance tips to market analysis.
+            Insights, reviews, and guides for the Kenyan motorist. From NTSA transfer fees to market analysis.
           </p>
         </div>
 

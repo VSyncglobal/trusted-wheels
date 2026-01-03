@@ -1,13 +1,14 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = 'https://trustrides.co.ke'
+
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/api/auth/'], // Keep sensitive areas private
+      disallow: ['/api/', '/admin/'], // Block bots from backend/admin areas
     },
-    // Point them to the sitemap we just made
-    sitemap: 'https://trustrides.co.ke/sitemap.xml', 
+    sitemap: `${baseUrl}/sitemap.xml`, // Vital for indexing
   }
 }
