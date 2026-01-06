@@ -1,6 +1,6 @@
 import { prisma } from "@repo/database";
 import Link from "next/link";
-import { ArrowLeft, Check, Fuel, Settings2, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Check, Fuel, Settings2, ShieldCheck, type LucideIcon, Info } from "lucide-react";
 import { notFound } from "next/navigation";
 import { InventoryActions } from "../../components/inventory-actions";
 import { VehicleGallery } from "../../components/vehicle-gallery";
@@ -54,7 +54,13 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   const getFeat = (key: string) => vehicle.features.find((f: Feature) => f.key === key)?.value || "N/A";
   
-  const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition"];
+  // 1. EXTRACT DESCRIPTION FEATURE
+  const descriptionFeature = vehicle.features.find((f: Feature) => f.key === "Description");
+
+  // 2. UPDATE CORE KEYS TO INCLUDE 'Description'
+  // This ensures 'Description' is NOT listed in the bottom features list
+  const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition", "Description"];
+  
   const customFeatures = vehicle.features.filter((f: Feature) => !coreKeys.includes(f.key));
 
   const mileage = getFeat("Mileage").replace(/\D/g, "") || "0";
@@ -62,12 +68,17 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   // SEO OPTIMIZED ALT TEXT
   const seoAltText = `Used ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.bodyType} for sale in Nairobi Kenya - Trust Rides`;
 
+  // --- GOOGLE MERCHANT FIXES ---
+  const validDate = new Date();
+  validDate.setMonth(validDate.getMonth() + 3);
+  const priceValidUntil = validDate.toISOString().split('T')[0];
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Vehicle', 
     name: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
     image: vehicle.images.map(img => img.url),
-    description: `For sale in Nairobi: ${vehicle.year} ${vehicle.make} ${vehicle.model}. ${vehicle.condition || 'Foreign Used'}.`,
+    description: descriptionFeature ? descriptionFeature.value : `For sale in Nairobi: ${vehicle.year} ${vehicle.make} ${vehicle.model}. ${vehicle.condition || 'Foreign Used'}.`,
     brand: { '@type': 'Brand', name: vehicle.make },
     model: vehicle.model,
     vehicleConfiguration: `${vehicle.bodyType} - ${getFeat("Engine Size")}`,
@@ -77,12 +88,48 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     mileageFromOdometer: { '@type': 'QuantitativeValue', value: mileage, unitCode: 'KMT' },
     offers: {
       '@type': 'Offer',
+      url: `https://trustrides.co.ke/inventory/${vehicle.id}`,
       priceCurrency: 'KES',
       price: vehicle.listingPrice.toString(),
       itemCondition: 'https://schema.org/UsedCondition', 
       availability: 'https://schema.org/InStock',
       areaServed: 'Kenya',
-      seller: { '@type': 'AutoDealer', name: 'Trust Rides Kenya' }
+      seller: { '@type': 'AutoDealer', name: 'Trust Rides Kenya' },
+      priceValidUntil: priceValidUntil,
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'KE',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnInStore'
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: '0',
+          currency: 'KES'
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'KE'
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 1,
+            maxValue: 3,
+            unitCode: 'DAY'
+          },
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 1,
+            unitCode: 'DAY'
+          }
+        }
+      }
     }
   }
 
@@ -99,7 +146,6 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
       <div className="max-w-[1400px] mx-auto p-3 pt-24 lg:p-4 lg:pt-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-full">
             <div className="lg:col-span-7 xl:col-span-8">
-               {/* Pass the rich alt text to the gallery */}
                <VehicleGallery images={vehicle.images} altTextBase={seoAltText} />
             </div>
 
@@ -121,9 +167,22 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                         <SpecItem icon={ShieldCheck} label="Trans." value={getFeat("Transmission")} />
                     </div>
 
+                    {/* 3. NEW DESCRIPTION BLOCK (INTELLIGENT RENDER) */}
+                    {descriptionFeature && (
+                      <div className="py-3 border-b border-gray-100">
+                        <h3 className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                           <Info size={10} /> Vehicle Description
+                        </h3>
+                        {/* UPDATED: Changed text color to strong black (text-black) */}
+                        <p className="text-xs text-black leading-relaxed font-medium">
+                          {descriptionFeature.value}
+                        </p>
+                      </div>
+                    )}
+
                     {customFeatures.length > 0 && (
                         <div>
-                            <h3 className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Features</h3>
+                            <h3 className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5 mt-2">Features</h3>
                             <div className="flex flex-wrap gap-1">
                                 {customFeatures.slice(0, 10).map((feat: Feature) => (
                                     <span key={feat.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-[9px] font-bold text-gray-700">

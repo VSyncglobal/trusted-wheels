@@ -49,6 +49,7 @@ export default async function Page() {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
     name: 'Trust Rides Kenya',
+    image: 'https://trustrides.co.ke/og.image.jpg',
     url: 'https://trustrides.co.ke',
     // UPDATED: Matches your Google Business Profile for better consistency
     description: 'Nairobi\'s premier dealership for verified foreign used and locally used vehicles. We specialize in Toyota, Subaru, and Mercedes-Benz with flexible asset financing options.',
