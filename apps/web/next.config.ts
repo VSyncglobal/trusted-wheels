@@ -2,10 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    unoptimized: true,
-
-    // These settings will be ignored while unoptimized is true, 
-    // but we keep them in case you upgrade your plan later.
+    unoptimized: false,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
