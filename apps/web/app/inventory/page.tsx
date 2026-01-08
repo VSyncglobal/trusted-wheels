@@ -2,8 +2,18 @@ import { prisma } from "@repo/database";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, Car } from "lucide-react";
+import type { Metadata } from "next"; // Added import
 
 export const revalidate = 60;
+
+// --- NEW METADATA SECTION ---
+export const metadata: Metadata = {
+  title: "Inventory",
+  description: "Browse our curated collection of verified pre-owned vehicles in Nairobi. Filter by make, model, and price.",
+  alternates: {
+    canonical: "/inventory",
+  },
+};
 
 // Type interfaces
 interface CountResult {
@@ -86,7 +96,7 @@ export default async function InventoryPage({
       <div className="max-w-[1600px] mx-auto px-2">
         <div className="flex flex-col lg:flex-row gap-4">
            
-           {/* --- SIDEBAR FILTER (Restored) --- */}
+           {/* --- SIDEBAR FILTER --- */}
            <aside className="w-full lg:w-44 shrink-0 space-y-4">
               {/* Search */}
               <div className="relative">
@@ -161,7 +171,6 @@ export default async function InventoryPage({
                     <Link href="/inventory" className="text-blue-600 text-[10px] font-bold mt-1 inline-block hover:underline">Clear Filters</Link>
                  </div>
               ) : (
-                // UPDATED: grid-cols-3 on mobile to allow 3 items across as requested
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                    {(vehicles as unknown as Vehicle[]).map((car: Vehicle) => (
                       <Link key={car.id} href={`/inventory/${car.id}`} className="group bg-white p-1.5 rounded-lg border border-gray-100 hover:shadow-md transition-all duration-300">

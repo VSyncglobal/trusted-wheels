@@ -1,33 +1,51 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google"; 
 import { Header } from "./components/header";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata: Metadata = {
+  // This sets the base domain for all pages
   metadataBase: new URL('https://trustrides.co.ke'),
+  
+  // CRITICAL CHANGE: Removed "alternates: { canonical: '/' }" from here.
+  // We will set specific canonicals on individual pages instead.
+
+  verification: {
+    google: 'c5bf3052e24c6abd', 
+    yandex: '0b50747eab7a073b', 
+  },
+
   title: {
     default: "Trust Rides | Premium Cars for Sale in Kenya",
     template: "%s | Trust Rides Kenya",
   },
   description: "The most trusted dealership for foreign used and locally used cars in Nairobi. We stock Toyota, Subaru, Mercedes, and Land Rover. 1500cc to 4000cc verified imports.",
+  applicationName: 'Trust Rides Kenya',
+  authors: [{ name: 'Trust Rides Sales Team' }],
+  generator: 'Next.js',
   keywords: [
-    // --- MAJOR CITIES & BROAD REGIONS ---
     "Cars for sale Nairobi", "Cars for sale Mombasa", "Car dealers Nakuru", "Autos for sale Kisumu", "Eldoret car bazaars", "Thika Road car dealers", "Kiambu Road showrooms",
-    
-    // --- BROAD MAKES ---
     "Toyota Kenya", "Honda Kenya", "Mazda Kenya", "Subaru Kenya", "Mercedes Benz Kenya", "Nissan Kenya", "Volkswagen Kenya", "Land Rover Kenya",
-    
-    // --- INTENT & SERVICES ---
     "Buy car Kenya", "Import cars Kenya", "Car financing Nairobi", "Asset finance car loans", "Trade in cars Kenya",
-    
-    // --- POPULAR MODELS (2025 Trends) ---
     "Toyota Fielder", "Mazda Demio", "Toyota Vitz", "Subaru Forester", "Toyota Prado", "Isuzu D-Max", "Nissan Note",
-    
-    // --- CATEGORIES ---
     "1500cc cars for sale", "Cheap cars under 1 million", "SUV for sale Kenya", "7 Seater cars Kenya", "Hybrid cars Kenya"
   ],
+  
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
+
   openGraph: {
     type: "website",
     locale: "en_KE",
@@ -35,13 +53,15 @@ export const metadata: Metadata = {
     siteName: "Trust Rides Kenya",
     title: "Trust Rides | Verified Cars for Sale in Nairobi",
     description: "Find your dream car in Nairobi. Verified imports, transparent pricing, and trusted service.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Trust Rides Premium Inventory" }],
+    images: [{ url: "/og.image.jpg", width: 1200, height: 630, alt: "Trust Rides Premium Inventory" }],
   },
+  
   twitter: {
     card: "summary_large_image",
     title: "Trust Rides Kenya",
     description: "Premium cars for sale in Nairobi. Verified history and transparent pricing.",
   },
+  
   robots: {
     index: true,
     follow: true,

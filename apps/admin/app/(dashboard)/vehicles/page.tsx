@@ -3,6 +3,7 @@ import Image from "next/image";
 import { prisma } from "@repo/database";
 import { Plus, Edit2, Gauge, Calendar, SlidersHorizontal } from "lucide-react";
 import { Search } from "../../../components/search"; 
+import { FacebookButton } from "./facebook-button";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,10 @@ export default async function InventoryPage({
           vehicles.map((car: any) => {
             const mileage = car.features.find((f: any) => f.key === "Mileage")?.value || "N/A";
             
+            // HYDRATION FIX: Use a stable date format (YYYY-MM-DD)
+            // This prevents mismatch between Server (US Date) and Client (Kenya/UK Date)
+            const dateString = car.createdAt.toISOString().split('T')[0];
+
             return (
               <div key={car.id} className="group bg-white/70 backdrop-blur-sm p-4 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
                 
@@ -102,7 +107,8 @@ export default async function InventoryPage({
                   <div className="flex items-center justify-center md:justify-start gap-4 text-xs font-bold text-gray-400 mt-2">
                     <span className="flex items-center gap-1"><Gauge size={14}/> {mileage}</span>
                     <span className="w-1 h-1 bg-gray-300 rounded-full"/>
-                    <span className="flex items-center gap-1"><Calendar size={14}/> {car.createdAt.toLocaleDateString()}</span>
+                    {/* UPDATED: Using dateString instead of toLocaleDateString() */}
+                    <span className="flex items-center gap-1"><Calendar size={14}/> {dateString}</span>
                   </div>
                 </div>
 
@@ -112,6 +118,9 @@ export default async function InventoryPage({
                     KES {Number(car.listingPrice).toLocaleString()}
                   </p>
                   <div className="flex gap-2">
+                    {car.status === 'PUBLISHED' && (
+                        <FacebookButton id={car.id} />
+                    )}
                     <Link href={`/vehicles/${car.id}`} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 font-bold text-xs uppercase hover:bg-black hover:text-white transition-colors flex items-center gap-2">
                       <Edit2 size={14} /> Edit
                     </Link>

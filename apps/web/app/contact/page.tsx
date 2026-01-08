@@ -1,52 +1,72 @@
-// FIXED: Removed 'Mail' from imports
-import { MapPin, Phone, Clock } from "lucide-react"
+// apps/web/app/contact/page.tsx
+
+import { MapPin, Phone, Clock, Facebook } from "lucide-react"
 
 export const metadata = { title: "Contact | Trust Rides" }
 
 export default function ContactPage() {
   return (
-    <div className="max-w-5xl mx-auto py-24">
-      <div className="grid md:grid-cols-2 gap-16">
+    <div className="min-h-screen bg-white flex items-center justify-center py-24 px-6">
+      <div className="max-w-3xl w-full text-center space-y-16">
         
-        <div className="space-y-12">
-           <div>
-             <h1 className="text-5xl font-bold tracking-tighter text-strong-black mb-6">Visit Our Yard.</h1>
-             <p className="text-lg text-gray-500 leading-relaxed">
-               Experience the quality firsthand. Our team is ready to walk you through our inventory 
-               and answer any technical questions.
-             </p>
+        {/* WELCOME SECTION */}
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter text-black">
+             We're here to help.
+           </h1>
+           <p className="text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto">
+             Welcome to Trust Rides. Whether you're looking for your next car or just have a quick question, 
+             reach out to us! We pride ourselves on quick responses and transparent conversations.
+           </p>
+        </div>
+
+        {/* CONTACT DETAILS GRID */}
+        <div className="grid md:grid-cols-3 gap-8">
+           {/* LOCATION */}
+           <div className="flex flex-col items-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-100 transition-colors">
+              <div className="w-12 h-12 bg-white shadow-sm flex items-center justify-center rounded-full mb-4 text-blue-600">
+                <MapPin size={24} />
+              </div>
+              <h3 className="font-bold text-black mb-1">Visit Our Yard</h3>
+              <p className="text-sm text-gray-500">Ridgeways, Kiambu Road</p>
+              <p className="text-sm text-gray-500">Nairobi, Kenya</p>
            </div>
 
-           <div className="space-y-8">
-              <div className="flex gap-4">
-                 <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full"><MapPin size={20} /></div>
-                 <div>
-                    <h3 className="font-bold text-strong-black">Ridgeways, Kiambu Road</h3>
-                    <p className="text-sm text-gray-500">Nairobi, Kenya</p>
-                 </div>
+           {/* PHONE */}
+           <div className="flex flex-col items-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-100 transition-colors">
+              <div className="w-12 h-12 bg-white shadow-sm flex items-center justify-center rounded-full mb-4 text-green-600">
+                <Phone size={24} />
               </div>
-              <div className="flex gap-4">
-                 <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full"><Phone size={20} /></div>
-                 <div>
-                    <h3 className="font-bold text-strong-black">+254 705 124 564</h3>
-                    <p className="text-sm text-gray-500">Sales & Inquiries</p>
-                 </div>
+              <h3 className="font-bold text-black mb-1">Call or WhatsApp</h3>
+              <p className="text-sm text-gray-500">+254 705 124 564</p>
+              <p className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-full">Available Now</p>
+           </div>
+
+           {/* HOURS */}
+           <div className="flex flex-col items-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-100 transition-colors">
+              <div className="w-12 h-12 bg-white shadow-sm flex items-center justify-center rounded-full mb-4 text-orange-500">
+                <Clock size={24} />
               </div>
-              <div className="flex gap-4">
-                 <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full"><Clock size={20} /></div>
-                 <div>
-                    <h3 className="font-bold text-strong-black">Opening Hours</h3>
-                    <p className="text-sm text-gray-500">Mon - Sat: 8:00 AM - 6:00 PM</p>
-                    <p className="text-sm text-gray-500">Sun: Closed</p>
-                 </div>
-              </div>
+              <h3 className="font-bold text-black mb-1">Opening Hours</h3>
+              <p className="text-sm text-gray-500">Mon - Sat: 8:00 AM - 6:00 PM</p>
+              <p className="text-sm text-gray-400">Sunday: Closed</p>
            </div>
         </div>
 
-        {/* MAP PLACEHOLDER */}
-        <div className="bg-gray-200 rounded-xl min-h-[400px] flex items-center justify-center">
-           <p className="text-gray-500 font-medium">WELCOME</p>
-           {/* You can embed an iframe here later */}
+        {/* FACEBOOK CTA */}
+        <div className="pt-8 border-t border-gray-100">
+            <p className="text-gray-400 text-sm font-medium mb-6 uppercase tracking-widest">Join our Community</p>
+            
+            <a 
+              href="https://www.facebook.com/profile.php?id=100065310889126" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-[#1877F2] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#166fe5] hover:scale-105 transition-all shadow-lg shadow-blue-200"
+            >
+              <Facebook size={24} fill="currentColor" className="text-white" />
+              Follow us on Facebook
+            </a>
+            <p className="text-gray-400 text-xs mt-4">Get daily updates on new stock and special offers.</p>
         </div>
 
       </div>

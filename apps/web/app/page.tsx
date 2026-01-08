@@ -4,8 +4,17 @@ import { prisma } from "@repo/database";
 import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck, Banknote, Globe } from "lucide-react"; 
+import type { Metadata } from "next"; // Added import
 
 export const dynamic = "force-dynamic";
+
+// --- NEW METADATA SECTION ---
+// This explicitly tells Google this is the homepage URL
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/',
+  },
+};
 
 interface VehicleSummary {
   id: string;
@@ -44,14 +53,13 @@ export default async function Page() {
     getOtherVehicles()
   ]);
 
-  // --- 1. CORE ORGANIZATION SCHEMA (Updated Description) ---
+  // --- 1. CORE ORGANIZATION SCHEMA ---
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
     name: 'Trust Rides Kenya',
     image: 'https://trustrides.co.ke/og.image.jpg',
     url: 'https://trustrides.co.ke',
-    // UPDATED: Matches your Google Business Profile for better consistency
     description: 'Nairobi\'s premier dealership for verified foreign used and locally used vehicles. We specialize in Toyota, Subaru, and Mercedes-Benz with flexible asset financing options.',
     areaServed: 'Kenya',
     priceRange: '$$$',
@@ -113,7 +121,7 @@ export default async function Page() {
             </div>
           ) : (
             (vehicles as unknown as VehicleSummary[]).map((car) => {
-              // UPDATED: Dynamic Alt Text for SEO
+              // Dynamic Alt Text for SEO
               const altText = `Used ${car.year} ${car.make} ${car.model} in Nairobi`;
               return (
               <Link key={car.id} href={`/inventory/${car.id}`} className="group relative min-w-[32%] md:min-w-[160px] lg:min-w-[200px] snap-center block">
