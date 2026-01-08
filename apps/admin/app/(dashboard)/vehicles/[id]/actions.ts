@@ -173,7 +173,6 @@ const message = `🔥 JUST ARRIVED! ${vehicle.year} ${vehicle.make} ${vehicle.mo
 ✅ Verified Quality & History
 ✅ Bank Finance Arranged
 ✅ Trade-ins Accepted
-✅ Countrywide Delivery
 
 Don't miss out on this deal! dependable cars move fast. 
 Click the link below for more photos and full specs:
