@@ -8,9 +8,10 @@ interface InventoryActionsProps {
   vehicleName: string
   stockNumber: string
   vehicleId?: string
+  vehicleLink?: string // New prop for the URL
 }
 
-export function InventoryActions({ price, vehicleName, stockNumber }: InventoryActionsProps) {
+export function InventoryActions({ price, vehicleName, stockNumber, vehicleLink }: InventoryActionsProps) {
   const [activeModal, setActiveModal] = useState<"NONE" | "FINANCE" | "INQUIRY">("NONE")
   const [copied, setCopied] = useState(false)
 
@@ -28,7 +29,7 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
     const shareData = {
       title: vehicleName,
       text: `Check out this ${vehicleName} (Stock: ${stockNumber}) on Trust Rides.`,
-      url: window.location.href,
+      url: vehicleLink || window.location.href,
     }
 
     // 1. Try Native Mobile Share (Best for Phones)
@@ -44,7 +45,7 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
     // 2. Fallback to Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
-        await navigator.clipboard.writeText(window.location.href)
+        await navigator.clipboard.writeText(shareData.url)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
         return
@@ -53,10 +54,10 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
       }
     }
 
-    // 3. Fallback for older browsers / non-secure contexts (e.g., local dev IP)
+    // 3. Fallback for older browsers / non-secure contexts
     try {
       const textArea = document.createElement("textarea")
-      textArea.value = window.location.href
+      textArea.value = shareData.url
       
       // Avoid scrolling to bottom
       textArea.style.top = "0"
@@ -122,7 +123,13 @@ export function InventoryActions({ price, vehicleName, stockNumber }: InventoryA
               <X size={20} />
             </button>
             {activeModal === "FINANCE" && <FinanceCalculator price={price} />}
-            {activeModal === "INQUIRY" && <InquiryForm vehicleName={vehicleName} stockNumber={stockNumber} />}
+            {activeModal === "INQUIRY" && (
+              <InquiryForm 
+                vehicleName={vehicleName} 
+                stockNumber={stockNumber} 
+                vehicleLink={vehicleLink} // Pass the link down
+              />
+            )}
           </div>
         </div>
       )}
@@ -182,10 +189,17 @@ function FinanceCalculator({ price }: { price: number }) {
   )
 }
 
-function InquiryForm({ vehicleName, stockNumber }: { vehicleName: string, stockNumber: string }) {
+function InquiryForm({ vehicleName, stockNumber, vehicleLink }: { vehicleName: string, stockNumber: string, vehicleLink?: string }) {
   const sendWhatsApp = () => {
-    const PHONE_NUMBER = "254705124564" 
-    const message = `Hi, I am interested in the ${vehicleName} (Stock: ${stockNumber}). Is it still available?`
+    const PHONE_NUMBER = "254705124564"
+    
+    // Construct the message with the link if available
+    let message = `Hi, I am interested in the ${vehicleName} (Stock: ${stockNumber}).`
+    if (vehicleLink) {
+        message += `\n\nLink: ${vehicleLink}`
+    }
+    message += `\n\nIs it still available?`
+
     const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`
     window.open(url, '_blank')
   }

@@ -52,12 +52,15 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
 
   if (!vehicle) return notFound();
 
+  // 1. Prepare Vehicle Link for Sharing
+  const vehicleUrl = `https://trustrides.co.ke/inventory/${vehicle.id}`;
+
   const getFeat = (key: string) => vehicle.features.find((f: Feature) => f.key === key)?.value || "N/A";
   
-  // 1. EXTRACT DESCRIPTION FEATURE
+  // 2. EXTRACT DESCRIPTION FEATURE
   const descriptionFeature = vehicle.features.find((f: Feature) => f.key === "Description");
 
-  // 2. UPDATE CORE KEYS TO INCLUDE 'Description'
+  // 3. UPDATE CORE KEYS TO INCLUDE 'Description'
   // This ensures 'Description' is NOT listed in the bottom features list
   const coreKeys = ["Engine Size", "Mileage", "Fuel Type", "Transmission", "Condition", "Description"];
   
@@ -88,7 +91,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
     mileageFromOdometer: { '@type': 'QuantitativeValue', value: mileage, unitCode: 'KMT' },
     offers: {
       '@type': 'Offer',
-      url: `https://trustrides.co.ke/inventory/${vehicle.id}`,
+      url: vehicleUrl,
       priceCurrency: 'KES',
       price: vehicle.listingPrice.toString(),
       itemCondition: 'https://schema.org/UsedCondition', 
@@ -200,6 +203,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                             vehicleId={vehicle.id}
                             vehicleName={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                             stockNumber={vehicle.stockNumber}
+                            vehicleLink={vehicleUrl} // PASSED HERE
                         />
                         <p className="text-center text-[8px] text-gray-400 mt-2 uppercase tracking-wider font-bold">Verified by Trust Rides • {vehicle.status}</p>
                     </div>
