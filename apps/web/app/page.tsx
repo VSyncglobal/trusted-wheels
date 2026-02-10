@@ -176,7 +176,7 @@ export default async function Page() {
               </div>
               <div className="text-center mt-6">
                  <Link href="/inventory" className="inline-block px-6 py-2 bg-black text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all shadow-lg">
-                    Search Rides
+                    Search vehicle
                  </Link>
               </div>
            </div>
